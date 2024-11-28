@@ -8,7 +8,7 @@ interface LeaderboardDTO {
   watchtimeSeconds: number,
 }
 
-export default function WatchtitmeLeaderboard() {
+export default function WatchtimeLeaderboard() {
   const {data, loading} = useData<LeaderboardDTO[]>("/watchtime/top", "WatchtimeLeaderboard", [])
 
   return <>
