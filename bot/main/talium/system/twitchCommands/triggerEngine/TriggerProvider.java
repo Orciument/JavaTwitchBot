@@ -2,6 +2,7 @@ package talium.system.twitchCommands.triggerEngine;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import talium.system.twitchCommands.persistence.MessagePattern;
 import talium.system.twitchCommands.persistence.TriggerEntity;
 import talium.system.twitchCommands.cooldown.ChatCooldown;
 import talium.system.twitchCommands.persistence.TriggerService;
@@ -131,6 +132,16 @@ public class TriggerProvider {
     public static void addCommandsFromCodeConfig(List<RuntimeTrigger> commands) {
         for (RuntimeTrigger command : commands) {
             codeTriggerMap.put(command.id(), command);
+            if (triggerService.existsById(command.id())) {
+                continue;
+            }
+            var patterns = command.patterns().stream().map(pattern -> new MessagePattern(pattern.pattern(), true, false, true)).toList();
+            TriggerEntity entity = new TriggerEntity(command.id(), "", patterns, command.permission(), command.userCooldown(), command.globalCooldown(), true, null);
+            try {
+                triggerService.save(entity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
