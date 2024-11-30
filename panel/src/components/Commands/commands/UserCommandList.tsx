@@ -23,9 +23,9 @@ const emptyCommand: Command = {
   template: { id: "", template: "", varJsonSchema: "" }
 }
 
-export default function CommandList() {
+export default function UserCommandList() {
   const [searchBox, setSearchBox] = useState<string>("")
-  const {data, loading, sendData} = useData<Command[]>("/commands/all?search=" + encodeURIComponent(searchBox), "Commands", [])
+  const {data, loading, sendData} = useData<Command[]>("/commands/userAll?search=" + encodeURIComponent(searchBox), "User-Commands", [])
   const [openCommand, setOpenCommand] = useState<Command | undefined>(undefined)
   const [isNew, setIsNew] = useState(false)
 

@@ -21,6 +21,16 @@ public class CommandController {
         this.triggerService = triggerService;
     }
 
+    @GetMapping("/userAll")
+    String getAllUserCommands(@RequestParam @Nullable String search) {
+        if (search == null || search.isEmpty()) {
+            var list = triggerService.getAllUserTriggers().stream().map(TriggerEntity::toTriggerDTO).toList();
+            return gson.toJson(list);
+        }
+        var list = triggerService.searchUserBy(search).stream().map(TriggerEntity::toTriggerDTO).toList();
+        return gson.toJson(list);
+    }
+
     @GetMapping("/all")
     String getAllCommands(@RequestParam @Nullable String search) {
         if (search == null || search.isEmpty()) {
