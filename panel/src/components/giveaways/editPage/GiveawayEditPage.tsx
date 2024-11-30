@@ -10,8 +10,12 @@ import {Select, SelectContent, SelectItem, SelectTrigger} from "../../../../@sha
 import TemplateEditor from "../../Commands/templates/TemplateEditor.tsx";
 import IconChecked from "../../../assets/IconChecked.tsx";
 import IconX from "../../../assets/IconX.tsx";
+import {useForm} from "react-hook-form";
+import {Command} from "../../Commands/commands/Command.ts";
 
 export default function GiveawayEditPage() {
+  //work arround so that templateEditor is happy
+  const {register} = useForm<Command>()
   return <div className="giveawayEditPage">
     <div className="tileBar">
       <Button variant="default">Save</Button>
@@ -57,8 +61,8 @@ export default function GiveawayEditPage() {
               <SelectItem value="SOME-TIMER2">Booster (alle 30 Minuten)</SelectItem>
             </SelectContent>
           </Select></VLabel>
-          <VLabel name="Timer Template"><TemplateEditor
-            template={{id: "", template: "tetst", varJsonSchema: "", vars: [{name: "testvar", type: "string"}]}}/>
+          <VLabel name="Timer Template">
+            <TemplateEditor register={register} varSchema=""/>
           </VLabel>
           {/* TODO add template color field*/}
           <h1>Public Website</h1>

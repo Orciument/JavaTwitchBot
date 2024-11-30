@@ -55,10 +55,7 @@ public class TriggerService {
         for (MessagePattern pattern : entity.patterns) {
             pattern.parentTrigger = entity;
         }
-        if (entity.template != null) {
-            if (entity.template.id == null || entity.template.id.isEmpty()) {
-                entity.template.id = entity.id;
-            }
+        if (entity.template != null && entity.template.id != null && !entity.template.id.isBlank()) {
             templateService.save(entity.template);
         }
         repo.save(entity);
