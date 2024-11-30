@@ -79,7 +79,7 @@ public class HealthManager {
         return inputStatus;
     }
 
-    record StringStatus(String name, InputStatus status) {}
+    public record StringStatus(String name, InputStatus status) {}
 
     public static List<StringStatus> allStatuses() {
         return statuses.stream().map(status -> new StringStatus(status.input.threadName(), status.status)).toList();
