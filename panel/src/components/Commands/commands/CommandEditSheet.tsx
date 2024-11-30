@@ -38,7 +38,9 @@ export function CommandForm({command, isNew, onSubmit, onDelete}: CommandFormPro
   function submit(formCommand: Command) {
     if (isNew) {
       formCommand.id = USERCOMMANDPREFIX + formCommand.id
-      formCommand.template.id = formCommand.id;
+      if (formCommand.template != null) {
+        formCommand.template.id = formCommand.id;
+      }
     } else {
       // if form field is disabled the value will not exist in the command object from the form
       formCommand.id = command.id
@@ -85,9 +87,11 @@ export function CommandForm({command, isNew, onSubmit, onDelete}: CommandFormPro
       </VLabel>
     </div>
 
+    { command.template != null ?
     <VLabel name="Template:">
-      <TemplateEditor template={getValues("template")}/>
-    </VLabel>
+      <TemplateEditor varSchema={command.varJsonSchema} register={register}/>
+    </VLabel> : <div className="noTemplate">This Command doesn't have a template because it triggers a callback inside the Bot</div>
+    }
     <SheetFooter>
       <Button variant={"destructive"} onClick={() => onDelete(command.id)}>Delete</Button>
       <Button variant={"default"} onClick={handleSubmit(submit)}>Save</Button>
