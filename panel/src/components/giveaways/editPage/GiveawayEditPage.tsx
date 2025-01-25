@@ -62,7 +62,7 @@ export default function GiveawayEditPage() {
             </SelectContent>
           </Select></VLabel>
           <VLabel name="Timer Template">
-            <TemplateEditor register={register} varSchema=""/>
+            <TemplateEditor register={register("template.template")} varSchema=""/>
           </VLabel>
           {/* TODO add template color field*/}
           <h1>Public Website</h1>

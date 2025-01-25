@@ -1,12 +1,11 @@
 import {Textarea} from "../../../../../@shadcn/components/ui/textarea.tsx";
 import "./TemplateEditor.css"
 import {Popover, PopoverContent, PopoverTrigger} from "../../../../../@shadcn/components/ui/popover.tsx";
-import {Command} from "../../commands/Command.ts";
-import {UseFormRegister} from "react-hook-form";
+import {UseFormRegisterReturn} from "react-hook-form";
 
 export interface TemplateEditorProps {
   varSchema: string,
-  register: UseFormRegister<Command>
+  register: UseFormRegisterReturn<string>
 }
 
 function getVarsFromJson(varJsonSchema: string) {
@@ -28,7 +27,7 @@ export default function TemplateEditor({varSchema, register}: TemplateEditorProp
       </Popover>)}
     </div>
     <div className="templateBody">
-      <Textarea placeholder={"Enter Template here"} {...register("template.template")} />
+      <Textarea placeholder={"Enter Template here"} {...register} />
     </div>
   </div>
 }
