@@ -1,7 +1,7 @@
 import "./CommandEditSheet.css"
 import {Input} from "../../../../@shadcn/components/ui/input.tsx";
 import VLabel from "../../../common/VerticalLabel/VLabel.tsx";
-import TemplateEditor from "../templates/TemplateEditor.tsx";
+import TemplateEditor from "../common/templates/TemplateEditor.tsx";
 import {Command, CooldownTypes} from "./Command.ts";
 import CheckBox from "../../../common/CheckBox/CheckBox.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "../../../../@shadcn/components/ui/select.tsx";

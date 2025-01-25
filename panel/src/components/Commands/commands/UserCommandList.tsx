@@ -1,4 +1,4 @@
-import "./CommandList.css"
+import "../common/ListView.css"
 import {CommandForm} from "./CommandEditSheet.tsx";
 import {Command, CommandPermission, CooldownTypes} from "./Command.ts";
 import {

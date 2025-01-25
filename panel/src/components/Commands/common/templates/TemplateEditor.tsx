@@ -1,7 +1,7 @@
-import {Textarea} from "../../../../@shadcn/components/ui/textarea.tsx";
+import {Textarea} from "../../../../../@shadcn/components/ui/textarea.tsx";
 import "./TemplateEditor.css"
-import {Popover, PopoverContent, PopoverTrigger} from "../../../../@shadcn/components/ui/popover.tsx";
-import {Command} from "../commands/Command.ts";
+import {Popover, PopoverContent, PopoverTrigger} from "../../../../../@shadcn/components/ui/popover.tsx";
+import {Command} from "../../commands/Command.ts";
 import {UseFormRegister} from "react-hook-form";
 
 export interface TemplateEditorProps {
