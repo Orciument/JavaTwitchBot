@@ -7,7 +7,7 @@ import {Input} from "../../../../@shadcn/components/ui/input.tsx";
 import {Textarea} from "../../../../@shadcn/components/ui/textarea.tsx";
 import {Switch} from "../../../../@shadcn/components/ui/switch.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "../../../../@shadcn/components/ui/select.tsx";
-import TemplateEditor from "../../Commands/templates/TemplateEditor.tsx";
+import TemplateEditor from "../../Commands/common/templates/TemplateEditor.tsx";
 import IconChecked from "../../../assets/IconChecked.tsx";
 import IconX from "../../../assets/IconX.tsx";
 import {useForm} from "react-hook-form";

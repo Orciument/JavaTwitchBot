@@ -1,4 +1,4 @@
-import "./CommandList.css"
+import "../common/ListView.css"
 import {CommandForm} from "./CommandEditSheet.tsx";
 import {Command} from "./Command.ts";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../../../@shadcn/components/ui/table.tsx";
