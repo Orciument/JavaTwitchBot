@@ -1,12 +1,17 @@
 package talium.system.stringTemplates;
 
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.repository.ListCrudRepository;
 
-import java.util.Optional;
+import java.util.List;
 
-public interface TemplateRepo extends CrudRepository<Template, String> {
+public interface TemplateRepo extends ListCrudRepository<Template, String> {
+
+    @Query("SELECT t.id FROM Template t " +
+    "WHERE t.id ilike %?1% " +
+    "OR t.template ilike %?1% " +
+    "OR t.messageColor ilike %?1%")
+    List<String> searchAllBy(String search);
+
 
 }
