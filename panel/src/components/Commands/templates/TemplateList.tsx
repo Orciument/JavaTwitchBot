@@ -27,13 +27,8 @@ export default function TemplateList() {
   }
 
   return <div className="commandList">
-    <WarningBox>TODO This Page lists all commands that are registered in the Bot, this includes internal command that are
-      used for various other features like giveaways and management features for mods. <br/>
-      Most of these Commands don't have a template (text output), instead they call an internal function of the Bot that
-      can then process the command action and may then respond with different or multiple templates. <br/>
-      If you delete a command that was registered automatically it will be regenerated with the next startup. Instead,
-      if you want to disable the command disable all its patterns. You can still use the same patterns in other
-      commands.
+    <WarningBox>This Page lists all templates/strings/texts that the bot uses to generate output text/messages. Templates are triggered by commands, giveaways, timers, alerts, etc... and are used to construct the messages that are hen send into the twitch chat (or to other platforms like discord) <br/>
+      If you delete a template that was registered automatically it will be regenerated with the next startup. But you can void the output of a template by deleting the content of the template.
     </WarningBox>
     <div className="actionBar">
       <div className="searchBox">
