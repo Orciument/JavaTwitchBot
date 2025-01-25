@@ -89,7 +89,7 @@ export function CommandForm({command, isNew, onSubmit, onDelete}: CommandFormPro
 
     { command.template != null ?
     <VLabel name="Template:">
-      <TemplateEditor varSchema={command.varJsonSchema} register={register}/>
+      <TemplateEditor varSchema={command.varJsonSchema} register={register("template.template")}/>
     </VLabel> : <div className="noTemplate">This Command doesn't have a template because it triggers a callback inside the Bot</div>
     }
     <SheetFooter>

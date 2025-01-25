@@ -29,7 +29,7 @@ export default function TemplateForm({template, onSubmit, onDelete}: TemplateFor
       <Input id="color" type="text" {...register("messageColor", {required: false})} />
     </VLabel>
     <VLabel name="Template:">
-      <TemplateEditor varSchema={template.template} register={register}/>
+      <TemplateEditor varSchema={template.template} register={register("template")}/>
     </VLabel>
     <SheetFooter>
       <Button variant={"destructive"} onClick={() => onDelete(template.id)}>Delete</Button>
