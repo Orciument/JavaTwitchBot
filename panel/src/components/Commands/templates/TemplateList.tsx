@@ -13,9 +13,8 @@ import TemplateForm from "./TemplateForm.tsx";
 
 export default function TemplateList() {
   const [searchBox, setSearchBox] = useState<string>("")
-  const {data, loading, sendData} = useData<Template[]>("/templates/all?search=" + encodeURIComponent(searchBox), "Templates", [])
+  const {data, loading, sendData} = useData<Template[]>("/template/all?search=" + encodeURIComponent(searchBox), "Templates", [])
   const [openTemplate, setOpenTemplate] = useState<Template | undefined>(undefined)
-  const [isNew, setIsNew] = useState(false)
 
   function handleSearch() {}
 
@@ -50,7 +49,6 @@ export default function TemplateList() {
       <TableBody>
         {data.map((template) => (
           <TableRow key={template.id} onClick={() => {
-            setIsNew(false);
             setOpenTemplate(template)
           }}>
             <TableCell>{template.id}</TableCell>
@@ -67,7 +65,7 @@ export default function TemplateList() {
           <SheetTitle>Edit Template:</SheetTitle>
           <SheetDescription>Edit a Template</SheetDescription>
         </SheetHeader>
-        {openTemplate ? <TemplateForm template={openTemplate} isNew={isNew}
+        {openTemplate ? <TemplateForm template={openTemplate}
                                       onDelete={(id) => sendData("/template/delete/" + id, "Deleted Template successfully!", {method: "DELETE"})}
                                       onSubmit={template => sendData("/template/save", "Template saved successfully!", {
                                       method: "POST",
