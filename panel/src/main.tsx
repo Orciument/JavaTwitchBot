@@ -5,8 +5,6 @@ import './main.css'
 import {GoalEditorPane} from "./components/Goals/GoalEditor.tsx";
 import {createBrowserRouter, createRoutesFromChildren, Outlet, Route, RouterProvider} from "react-router-dom";
 import MessagePane from "./components/ChatHistory/Pane/MessagePane.tsx";
-import TemplateEditorPane from "./components/Templates/TemplateEditor/TemplateEditorPane.tsx";
-import TemplateListPane from "./components/Templates/TemplateList/TemplateListPane.tsx";
 import LoginPage from "./components/Login/LoginPage.tsx";
 import {Toaster} from "../@shadcn/components/ui/toaster.tsx";
 import TwitchNavMenu from "./components/NavMenuTwitch/TwitchNavMenu.tsx";
@@ -20,6 +18,7 @@ import {TooltipProvider} from "../@shadcn/components/ui/tooltip.tsx";
 import TokenRemover from "./components/Login/TokenRemover.tsx";
 import AccountsPage from "./components/panelAccounts/AccountsPage.tsx";
 import WatchtimePage from "./components/watchtime/WatchtimePage.tsx";
+import TemplateList from "./components/Commands/templates/TemplateList.tsx";
 
 export const PANEL_BASE_URL = import.meta.env.VITE_PANEL_BASE_URL;
 export const BOT_BACKEND_ADDR = import.meta.env.VITE_BOT_BACKEND_ADDR
@@ -39,8 +38,6 @@ const router = createBrowserRouter(
         </LoginPage>
       }>
         <Route path="/goal" element={<GoalEditorPane/>}/>
-        <Route path="/templates" element={<TemplateListPane/>}/>
-        <Route path="/templates/edit" element={<TemplateEditorPane/>}/>
         <Route path="/history" element={<MessagePane/>}/>
         <Route path="*" element={<p>Diese seite gibt es nicht</p>}/>
         <Route path="/" element={<p>Diese seite gibt es nicht</p>}/>
