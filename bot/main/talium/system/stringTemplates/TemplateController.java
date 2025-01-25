@@ -5,11 +5,10 @@ import com.google.gson.GsonBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/template")
+@RestController
+@RequestMapping(path = "/template", produces = "application/json")
 public class TemplateController {
 
     private final Gson gson = new GsonBuilder().serializeNulls().create();
@@ -23,8 +22,7 @@ public class TemplateController {
     @GetMapping("/all")
     String getAllCommands(@RequestParam @Nullable String search) {
         if (search == null || search.isEmpty()) {
-            var list = templateService.getAllTemplates();
-            return gson.toJson(list);
+            return gson.toJson(templateService.getAllTemplates());
         }
         return gson.toJson(templateService.searchBy(search));
     }

@@ -53,7 +53,7 @@ public class TemplateService {
     }
 
     public List<Template> getAllTemplates() {
-        return (List<Template>) repo.findAll();
+        return repo.findAll();
     }
 
     public void save(Template template) {

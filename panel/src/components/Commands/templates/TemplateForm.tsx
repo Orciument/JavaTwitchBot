@@ -8,12 +8,11 @@ import {Button} from "../../../../@shadcn/components/ui/button.tsx";
 
 export interface TemplateFormProps {
   template: Template,
-  isNew?: boolean
   onSubmit: (template: Template) => void
   onDelete: (templateId: string) => void
 }
 
-export default function TemplateForm({template, isNew, onSubmit, onDelete}: TemplateFormProps) {
+export default function TemplateForm({template, onSubmit, onDelete}: TemplateFormProps) {
   const {handleSubmit, register} = useForm<Template>({
     defaultValues: template,
   });
@@ -24,10 +23,10 @@ export default function TemplateForm({template, isNew, onSubmit, onDelete}: Temp
 
   return <div className="commandPopup">
     <VLabel name="Internal Template Name/Id:">
-      <Input id="templateId" type="text" {...register("id", {required: true, disabled: !isNew})} />
+      <Input id="templateId" type="text" {...register("id", {required: true, disabled: true})} />
     </VLabel>
     <VLabel name="Twitch Message Color:">
-      <Input id="color" type="text" {...register("messageColor", {required: false, disabled: !isNew})} />
+      <Input id="color" type="text" {...register("messageColor", {required: false})} />
     </VLabel>
     <VLabel name="Template:">
       <TemplateEditor varSchema={template.template} register={register}/>
