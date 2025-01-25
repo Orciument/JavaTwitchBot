@@ -3,6 +3,7 @@ import AllCommandList from "./commands/AllCommandList.tsx";
 import TemplateListPane from "../Templates/TemplateList/TemplateListPane.tsx";
 import UserCommandList from "./commands/UserCommandList.tsx";
 import "./CommandPage.css"
+import TemplateList from "./templates/TemplateList.tsx";
 
 export default function CommandsPage() {
   return <Tabs defaultValue="commands" >
@@ -10,6 +11,7 @@ export default function CommandsPage() {
       <TabsTrigger value="commands">User-Commands</TabsTrigger>
       <TabsTrigger value="templates">Templates</TabsTrigger>
       <TabsTrigger value="trigger">Internal Commands</TabsTrigger>
+      <TabsTrigger value="templates2">Templates 2</TabsTrigger>
     </TabsList>
     <TabsContent value="commands">
       <UserCommandList/>
@@ -19,6 +21,9 @@ export default function CommandsPage() {
     </TabsContent>
     <TabsContent value="trigger">
       <AllCommandList/>
+    </TabsContent>
+    <TabsContent value="templates2">
+      <TemplateList/>
     </TabsContent>
   </Tabs>
 }
