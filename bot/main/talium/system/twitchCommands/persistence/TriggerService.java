@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import talium.system.twitchCommands.triggerEngine.RuntimeTrigger;
 import talium.system.stringTemplates.TemplateService;
 import talium.system.twitchCommands.triggerEngine.TriggerEngine;
+import talium.system.twitchCommands.triggerEngine.TriggerProvider;
 
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,7 @@ public class TriggerService {
         }
         repo.save(entity);
         oldEntity.ifPresent(messagePatternRepo::deleteAllByParentTrigger);
+        TriggerProvider.rebuildTriggerCache();
     }
 
     public boolean existsById(String id) {

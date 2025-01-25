@@ -13,11 +13,13 @@ export interface TemplateFormProps {
 }
 
 export default function TemplateForm({template, onSubmit, onDelete}: TemplateFormProps) {
+  const id = template.id;
   const {handleSubmit, register} = useForm<Template>({
     defaultValues: template,
   });
 
   function submit(template: Template) {
+    template.id = id;
     onSubmit(template);
   }
 
