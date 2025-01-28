@@ -7,12 +7,14 @@ import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.auth.providers.TwitchIdentityProvider;
 import com.github.twitch4j.chat.TwitchChat;
 import com.github.twitch4j.chat.events.TwitchEvent;
+import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.helix.TwitchHelix;
 import org.apache.commons.lang.RandomStringUtils;
 import talium.inputs.shared.oauth.OAuthEndpoint;
 import talium.inputs.shared.oauth.OauthAccount;
 import talium.system.coinsWatchtime.WatchtimeUpdateService;
 import talium.system.eventSystem.EventDispatcher;
+import talium.system.eventSystem.Subscriber;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.Input;
@@ -22,7 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import talium.system.inputSystem.configuration.InputConfiguration;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -202,5 +206,16 @@ public class Twitch4JInput implements BotInput {
     private void report(InputStatus health) {
         HealthManager.reportStatus(this, health);
         this.health = health;
+    }
+
+
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("DD-HH:mm:ss.SSS");
+
+    @Subscriber
+    public static void converTwitchMessage(ChannelMessageEvent messageEvent) {
+        if (messageEvent.getMessage().toCharArray()[0] == '!') {
+            System.out.println(simpleDateFormat.format(new Date()) + " |CHAT | " + messageEvent.getUser().getName() + ": " + messageEvent.getMessage());
+        }
+        EventDispatcher.dispatch(ChatMessage.fromChannelMessageEvent(messageEvent));
     }
 }
