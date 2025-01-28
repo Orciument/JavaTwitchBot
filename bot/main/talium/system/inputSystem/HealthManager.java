@@ -84,4 +84,8 @@ public class HealthManager {
     public static List<StringStatus> allStatuses() {
         return statuses.stream().map(status -> new StringStatus(status.input.threadName(), status.status)).toList();
     }
+
+    public static InputStatus get(BotInput input) {
+        return statuses.stream().filter(s -> s.input.equals(input)).findFirst().get().status;
+    }
 }

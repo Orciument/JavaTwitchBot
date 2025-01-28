@@ -66,7 +66,7 @@ public class TipeeeInput implements BotInput {
 
     @Override
     public void run() {
-        if (tipeeeSocketUrl == null || tipeeeSocketUrl.isEmpty() && apiKey == null || apiKey.isEmpty() && channelName == null || channelName.isEmpty()) {
+        if (apiKey == null || apiKey.isEmpty() && channelName == null || channelName.isEmpty()) {
             LOGGER.warn("TipeeeStream Module is disabled");
             report(InputStatus.STOPPED);
             return;

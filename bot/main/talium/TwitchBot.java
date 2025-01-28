@@ -2,7 +2,10 @@ package talium;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.persistence.PreRemove;
+import talium.inputs.TipeeeStream.TipeeeInput;
+import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.system.StopWatch;
+import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.InputManager;
 import talium.system.inputSystem.InputStatus;
@@ -11,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import talium.system.twitchCommands.triggerEngine.TriggerProvider;
 
 @SpringBootApplication
 @EnableJpaRepositories
@@ -30,6 +34,34 @@ public class TwitchBot {
         System.out.println("DateFormat: DayNumber-Hour:Minute:Second:Millis");
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
         System.out.println("-----------------|-----|-[-------------]---------------------------------------------------------------------------------------------------------------------------------------------");
+
+
+        //TWITCH
+        BotInput twitch = new Twitch4JInput();
+        try {
+            twitch.run();
+            //TODO register config stuff
+        } catch (RuntimeException e) {
+            logger.error("Exception starting Input: Twitch because: {}",  e.getMessage());
+            HealthManager.reportStatus(twitch, InputStatus.DEAD);
+        }
+        while (HealthManager.get(twitch).equals(InputStatus.STARTING)) {
+            Thread.onSpinWait();
+        }
+
+        //TIPEEE
+        BotInput tipeee = new TipeeeInput();
+        try {
+            tipeee.run();
+            //TODO register config stuff
+        } catch (RuntimeException e) {
+            logger.error("Exception starting Input: Twitch because: {}",  e.getMessage());
+            HealthManager.reportStatus(tipeee, InputStatus.DEAD);
+        }
+        while (HealthManager.get(tipeee).equals(InputStatus.STARTING)) {
+            Thread.onSpinWait();
+        }
+
         InputManager.startAllInputs();
         HealthManager.subscribeNextChange(_ -> time.close(), InputStatus.HEALTHY);
     }
