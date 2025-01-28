@@ -39,7 +39,7 @@ public class InputManager {
 
     public static void startInput(BotInput input) {
         try {
-            new Thread(input, "LAUNCHER-" + input.threadName()).start();
+//            new Thread(input, "LAUNCHER-" + input.threadName()).start();
             inputs.add(input);
         } catch (RuntimeException e) {
             logger.error("Exception starting Input: {} because: {}", input.getClass().getName(), e.getMessage());
