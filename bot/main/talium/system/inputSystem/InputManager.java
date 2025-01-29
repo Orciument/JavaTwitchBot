@@ -43,7 +43,7 @@ public class InputManager {
             inputs.add(input);
         } catch (RuntimeException e) {
             logger.error("Exception starting Input: {} because: {}", input.getClass().getName(), e.getMessage());
-            HealthManager.reportStatus(input, InputStatus.DEAD);
+//            HealthManager.reportStatus(input, InputStatus.DEAD);
         }
         try {
 //            var conf = input.runRegistration();
@@ -54,7 +54,7 @@ public class InputManager {
 //            templateService.saveIfAbsent(conf.templates());
         } catch (RuntimeException e) {
             logger.error("Exception while setting Input Configuration: {} because: {}", input.getClass().getName(), e.getMessage());
-            HealthManager.reportStatus(input, InputStatus.INJURED);
+//            HealthManager.reportStatus(input, InputStatus.INJURED);
         }
     }
 
@@ -69,13 +69,13 @@ public class InputManager {
         new Thread(() -> {
             try {
                 input.shutdown();
-                HealthManager.reportStatus(input, InputStatus.STOPPED);
+//                HealthManager.reportStatus(input, InputStatus.STOPPED);
             } catch (Exception e) {
                 logger.error("Exception stopping Input: {} because: {}", input.getClass().getName(), e.getMessage());
-                HealthManager.reportStatus(input, InputStatus.DEAD);
+//                HealthManager.reportStatus(input, InputStatus.DEAD);
             }
             inputs.remove(input);
-        }, "CLOSER-" + input.threadName()).start();
+        }, "CLOSER-").start();
     }
 
     public static boolean finishedShutdown() {

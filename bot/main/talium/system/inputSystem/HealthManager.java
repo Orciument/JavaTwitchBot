@@ -4,23 +4,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class HealthManager {
 
-    public static class Status {
+    public static class StatusDescription {
         InputStatus status;
-        BotInput input;
+        String identifier;
+        String title;
+        String description;
 
-        public Status(InputStatus status, BotInput input) {
+        public StatusDescription(InputStatus status, String identifier, String title, String description) {
             this.status = status;
-            this.input = input;
+            this.identifier = identifier;
+            this.title = title;
+            this.description = description;
         }
     }
 
+    public record Customization(
+            String title,
+            String description
+    ) {}
+
     private static final Logger logger = LoggerFactory.getLogger(HealthManager.class);
-    private static final ArrayList<Status> statuses = new ArrayList<>();
+    private static final ArrayList<StatusDescription> STATUS_DESCRIPTIONS = new ArrayList<>();
+    private static final HashMap<String, Customization> reporterCustomisation = new HashMap<>();
     private static volatile InputStatus inputStatus = InputStatus.STOPPED;
     private static volatile Consumer<InputStatus> callback;
     private static volatile InputStatus filter;
@@ -40,17 +52,27 @@ public class HealthManager {
         callback = null;
     }
 
-    public static void reportStatus(BotInput input, InputStatus status) {
-        var statusOptional = statuses.stream().filter(s -> s.input == input).findFirst();
+    public static void reportStatus(Class self, InputStatus status) {
+        reportStatus(self.getSimpleName(), status);
+    }
+
+    public static void reportStatus(String self, InputStatus status) {
+        var statusOptional = STATUS_DESCRIPTIONS.stream().filter(s -> s.identifier.equals(self)).findFirst();
         if (statusOptional.isEmpty()) {
-            synchronized (statuses) {
-                statuses.add(new Status(status, input));
+            var customization = reporterCustomisation.getOrDefault(self, new Customization(self, ""));
+            StatusDescription e = new StatusDescription(status, self, customization.title, customization.description);
+            synchronized (STATUS_DESCRIPTIONS) {
+                STATUS_DESCRIPTIONS.add(e);
             }
         } else {
             statusOptional.get().status = status;
         }
         checkOverallStatusChange();
         checkCallback();
+    }
+
+    public static void addCustomization(String self, String title, String description) {
+        reporterCustomisation.put(self, new Customization(title, description));
     }
 
     private static void checkOverallStatusChange() {
@@ -63,11 +85,11 @@ public class HealthManager {
 
     private static InputStatus calcOverallStatus() {
         InputStatus worstYet = InputStatus.STOPPED;
-        ArrayList<Status> copyied;
-        synchronized (statuses) {
-            copyied = (ArrayList<Status>) statuses.clone();
+        ArrayList<StatusDescription> copyied;
+        synchronized (STATUS_DESCRIPTIONS) {
+            copyied = (ArrayList<StatusDescription>) STATUS_DESCRIPTIONS.clone();
         }
-        for (Status status : copyied) {
+        for (StatusDescription status : copyied) {
             if (status.status.compareTo(worstYet) > 0) {
                 worstYet = status.status;
             }
@@ -75,17 +97,18 @@ public class HealthManager {
         return worstYet;
     }
 
-    public static InputStatus inputStatus() {
-        return inputStatus;
+    public record StringStatus(String name, InputStatus status) {
     }
-
-    public record StringStatus(String name, InputStatus status) {}
 
     public static List<StringStatus> allStatuses() {
-        return statuses.stream().map(status -> new StringStatus(status.input.threadName(), status.status)).toList();
+        return STATUS_DESCRIPTIONS.stream().map(status -> new StringStatus(status.title, status.status)).toList();
     }
 
-    public static InputStatus get(BotInput input) {
-        return statuses.stream().filter(s -> s.input.equals(input)).findFirst().get().status;
+    public static InputStatus get(Class identifier) {
+        return get(identifier.getSimpleName());
+    }
+
+    public static InputStatus get(String identifier) {
+        return STATUS_DESCRIPTIONS.stream().filter(s -> s.identifier.equals(identifier)).findFirst().get().status;
     }
 }

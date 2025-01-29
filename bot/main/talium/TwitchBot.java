@@ -29,6 +29,9 @@ public class TwitchBot {
         startup();
     }
 
+    private static BotInput twitch;
+    private static BotInput tipeee;
+
     public static void startup() {
         StopWatch time = new StopWatch(StopWatch.TYPE.STARTUP);
         SpringApplication.run(TwitchBot.class);
@@ -37,9 +40,10 @@ public class TwitchBot {
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
         System.out.println("-----------------|-----|-[-------------]---------------------------------------------------------------------------------------------------------------------------------------------");
 
-        startInput(new Twitch4JInput(), "Twitch");
-        startInput(new TipeeeInput(), "Tipeee");
+        twitch = startInput(new Twitch4JInput());
+        tipeee = startInput(new TipeeeInput());
 
+        logger.info("Inputs started, initializing other system components...");
         // This section is used to pass the execution/control to different parts of the bot to do some initialisation
         WatchtimeUpdateService.init();
         WIPWatchtimeCommandServer.init();
@@ -47,36 +51,37 @@ public class TwitchBot {
         TriggerProvider.rebuildTriggerCache();
         //TODO remove all templates that were once registered automatically, but are no longer
 
-        InputManager.startAllInputs();
-        HealthManager.subscribeNextChange(_ -> time.close(), InputStatus.HEALTHY);
+        time.close();
     }
 
     @PreDestroy
     @PreRemove
     public static void shutdown() {
-        try {
-            StopWatch time = new StopWatch(StopWatch.TYPE.SHUTDOWN);
-            requestedShutdown = true;
-            InputManager.stopAllInputs();
-            //Because we stop all inputs in separate Threads,
-            //(so that one broken shutdown does not stop the other once from shutting down)
-            //we need to wait here until all Inputs are shut down, because otherwise it will
-            //clean up all the Spring Objects, who may be needed in a shutdown routine
-            while (InputManager.finishedShutdown()) {
-                Thread.onSpinWait();
-            }
-            time.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        StopWatch time = new StopWatch(StopWatch.TYPE.SHUTDOWN);
+        requestedShutdown = true;
+        stopInput(twitch);
+        stopInput(tipeee);
+        time.close();
     }
 
-    private static void startInput(BotInput input, String name) {
+    private static BotInput startInput(BotInput input) {
         try {
             input.run();
         } catch (RuntimeException e) {
-            logger.error("Exception starting Input: {} because: {}",  name, e.getMessage());
-            HealthManager.reportStatus(input, InputStatus.DEAD);
+            logger.error("Exception starting Input: {} because: {}", input.getClass().getSimpleName(), e.getMessage());
+            HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
+        }
+        return input;
+    }
+
+    private static void stopInput(BotInput input) {
+        if (input != null) {
+            try {
+                input.shutdown();
+            } catch (Exception e) {
+                logger.error("Exception stopping Input: {} because: {}", input.getClass().getSimpleName(), e.getMessage());
+                HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
+            }
         }
     }
 }
