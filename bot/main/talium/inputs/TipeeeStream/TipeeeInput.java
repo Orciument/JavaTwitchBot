@@ -4,11 +4,11 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.engineio.client.EngineIOException;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 import talium.Registrar;
 import talium.TwitchBot;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
-import talium.system.inputSystem.Input;
 import talium.system.inputSystem.InputStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +25,7 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.Arrays;
 
-@Input
+@Component
 public class TipeeeInput implements BotInput {
     private static final String tipeeeSocketInfoUrl = "https://api.tipeeestream.com/v2.0/site/socket";
 

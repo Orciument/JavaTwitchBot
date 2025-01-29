@@ -11,13 +11,5 @@ public enum InputStatus {
     HEALTHY,
     STARTING,
     INJURED,
-    DEAD;
-
-    public boolean isWorseThan(InputStatus status) {
-        return (this.compareTo(status) < 0);
-    }
-
-    public boolean isBetterThan(InputStatus status) {
-        return (this.compareTo(status) > 0);
-    }
+    DEAD
 }

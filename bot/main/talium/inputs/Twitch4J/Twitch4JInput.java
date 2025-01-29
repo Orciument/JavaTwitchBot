@@ -18,7 +18,6 @@ import talium.system.eventSystem.EventDispatcher;
 import talium.system.eventSystem.Subscriber;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
-import talium.system.inputSystem.Input;
 import talium.system.inputSystem.InputStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
