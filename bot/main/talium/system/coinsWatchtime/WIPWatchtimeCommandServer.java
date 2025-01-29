@@ -1,62 +1,36 @@
 package talium.system.coinsWatchtime;
 
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import talium.Registrar;
 import talium.inputs.Twitch4J.ChatMessage;
 import talium.inputs.Twitch4J.TwitchApi;
 import talium.system.Out;
 import talium.system.coinsWatchtime.chatter.Chatter;
 import talium.system.coinsWatchtime.chatter.ChatterService;
-import talium.system.inputSystem.BotInput;
-import talium.system.inputSystem.Input;
-import talium.system.inputSystem.InputStatus;
-import talium.system.inputSystem.configuration.InputConfiguration;
 
 import java.util.HashMap;
 
 /**
- * Does nothing, only temporarily exists to add watchtime and coins commands
+ * Serves all commands related to watchtime and coins
  */
-@Input
-public class CoinsDummyInput implements BotInput {
-    private static final Logger logger = LoggerFactory.getLogger(CoinsDummyInput.class);
+@Component
+public class WIPWatchtimeCommandServer {
+    private static final Logger logger = LoggerFactory.getLogger(WIPWatchtimeCommandServer.class);
     private static ChatterService chatterService;
 
     @Autowired
     public void setChatterService(ChatterService chatterService) {
-        CoinsDummyInput.chatterService = chatterService;
+        WIPWatchtimeCommandServer.chatterService = chatterService;
     }
 
-    @Override
-    public void run() {
-        //noop
-    }
-
-    @Override
-    public void shutdown() {
-        //noop
-    }
-
-    @Override
-    public InputStatus getHealth() {
-        return InputStatus.HEALTHY;
-    }
-
-    @Override
-    public String threadName() {
-        return "CoinsDummyInput";
-    }
-
-    @Override
-    public @Nullable InputConfiguration getConfiguration() {
-        return new InputConfiguration.Builder()
-                .addCallbackCommand("watchtime.getwatchtime", "!watchtime", CoinsDummyInput::triggerGetWatchtime)
-                .addCallbackCommand("watchtime.getCoins", "!coins", CoinsDummyInput::triggerGetCoins)
-                .addTemplate("coins.coins", "${wt.username} has ${wt.coins} Coins!")
-                .addTemplate("coins.watchtime", "${wt.username} has ${wt.daysRounded2} Days of watchtime!")
-                .build();
+    public static void init() {
+        Registrar.registerCallbackCommand("watchtime.getwatchtime", "!watchtime", WIPWatchtimeCommandServer::triggerGetWatchtime);
+        Registrar.registerCallbackCommand("watchtime.getCoins", "!coins", WIPWatchtimeCommandServer::triggerGetCoins);
+        Registrar.registerTemplate("coins.coins", "${wt.username} has ${wt.coins} Coins!");
+        Registrar.registerTemplate("coins.watchtime", "${wt.username} has ${wt.daysRounded2} Days of watchtime!");
     }
 
     static class WatchtimeContext {

@@ -146,9 +146,7 @@ public class TipeeeInput implements BotInput {
     }
 
     @Override
-    public InputConfiguration getConfiguration() {
-        return null;
-    }
+    public void runRegistration() {}
 
     @Override
     public String threadName() {

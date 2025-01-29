@@ -46,12 +46,12 @@ public class InputManager {
             HealthManager.reportStatus(input, InputStatus.DEAD);
         }
         try {
-            var conf = input.getConfiguration();
-            if (conf == null) {
-                return;
-            }
-            TriggerProvider.addCommandsFromCodeConfig(conf.commands());
-            templateService.saveIfAbsent(conf.templates());
+//            var conf = input.runRegistration();
+//            if (conf == null) {
+//                return;
+//            }
+//            TriggerProvider.addCommandsFromCodeConfig(conf.commands());
+//            templateService.saveIfAbsent(conf.templates());
         } catch (RuntimeException e) {
             logger.error("Exception while setting Input Configuration: {} because: {}", input.getClass().getName(), e.getMessage());
             HealthManager.reportStatus(input, InputStatus.INJURED);

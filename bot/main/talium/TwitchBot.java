@@ -5,6 +5,7 @@ import jakarta.persistence.PreRemove;
 import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.system.StopWatch;
+import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.InputManager;
@@ -35,32 +36,14 @@ public class TwitchBot {
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
         System.out.println("-----------------|-----|-[-------------]---------------------------------------------------------------------------------------------------------------------------------------------");
 
+        startInput(new Twitch4JInput(), "Twitch");
+        startInput(new TipeeeInput(), "Tipeee");
 
-        //TWITCH
-        BotInput twitch = new Twitch4JInput();
-        try {
-            twitch.run();
-            //TODO register config stuff
-        } catch (RuntimeException e) {
-            logger.error("Exception starting Input: Twitch because: {}",  e.getMessage());
-            HealthManager.reportStatus(twitch, InputStatus.DEAD);
-        }
-        while (HealthManager.get(twitch).equals(InputStatus.STARTING)) {
-            Thread.onSpinWait();
-        }
+        // This section is used to pass the execution/control to different parts of the bot to do some initialisation
+        WIPWatchtimeCommandServer.init();
 
-        //TIPEEE
-        BotInput tipeee = new TipeeeInput();
-        try {
-            tipeee.run();
-            //TODO register config stuff
-        } catch (RuntimeException e) {
-            logger.error("Exception starting Input: Twitch because: {}",  e.getMessage());
-            HealthManager.reportStatus(tipeee, InputStatus.DEAD);
-        }
-        while (HealthManager.get(tipeee).equals(InputStatus.STARTING)) {
-            Thread.onSpinWait();
-        }
+        TriggerProvider.rebuildTriggerCache();
+        //TODO remove all templates that were once registered automatically, but are no longer
 
         InputManager.startAllInputs();
         HealthManager.subscribeNextChange(_ -> time.close(), InputStatus.HEALTHY);
@@ -83,6 +66,15 @@ public class TwitchBot {
             time.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void startInput(BotInput input, String name) {
+        try {
+            input.run();
+        } catch (RuntimeException e) {
+            logger.error("Exception starting Input: {} because: {}",  name, e.getMessage());
+            HealthManager.reportStatus(input, InputStatus.DEAD);
         }
     }
 }
