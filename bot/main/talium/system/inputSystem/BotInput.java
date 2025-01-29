@@ -5,11 +5,4 @@ public interface BotInput extends Runnable {
     void run();
 
     void shutdown();
-
-    InputStatus getHealth();
-
-    void runRegistration();
-
-    String threadName();
-
 }

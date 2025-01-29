@@ -125,16 +125,9 @@ public class TriggerProvider {
     }
 
     /**
-     * Add the commands are specified in the InputConfiguration to an internal list to use while building the final cache of commands.
-     * @param commands list of commands to add
-     * @implNote Only to be used by the InputManager
+     * Add the command to an internal list to use while building the final cache of commands.
+     * @param command command
      */
-    public static void addCommandsFromCodeConfig(List<RuntimeTrigger> commands) {
-        for (RuntimeTrigger command : commands) {
-            addCommandRegistration(command);
-        }
-    }
-
     public static void addCommandRegistration(RuntimeTrigger command) {
         codeTriggerMap.put(command.id(), command);
         if (triggerService.existsById(command.id())) {

@@ -10,9 +10,10 @@ import com.github.twitch4j.chat.events.TwitchEvent;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.helix.TwitchHelix;
 import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.stereotype.Component;
+import talium.Registrar;
 import talium.inputs.shared.oauth.OAuthEndpoint;
 import talium.inputs.shared.oauth.OauthAccount;
-import talium.system.coinsWatchtime.WatchtimeUpdateService;
 import talium.system.eventSystem.EventDispatcher;
 import talium.system.eventSystem.Subscriber;
 import talium.system.inputSystem.BotInput;
@@ -22,7 +23,6 @@ import talium.system.inputSystem.InputStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import talium.system.inputSystem.configuration.InputConfiguration;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Input
+@Component
 public class Twitch4JInput implements BotInput {
     protected static String channelName;
     protected static String chatAccountName;
@@ -70,14 +70,14 @@ public class Twitch4JInput implements BotInput {
     protected static OAuth2Credential oAuth2Credential;
     private TwitchIdentityProvider iProvider;
     private TwitchClient twitchClient;
-    private InputStatus health;
 
     protected static String broadCasterChannelId;
 
     @Override
     public void run() {
         logger.debug("Starting... ");
-        report(InputStatus.STARTING);
+        Registrar.registerHealthDescription(Twitch4JInput.class, "Twitch4JInput", "");
+        HealthManager.reportStatus(Twitch4JInput.class, InputStatus.STARTING);
         if (chatAccountName == null || chatAccountName.isEmpty()) {
             logger.warn("Using twitchChannelName as botAccountName: {}", channelName);
             logger.warn("Consider setting the botAccountName explicitly to avoid accidental misconfiguration.");
@@ -95,17 +95,17 @@ public class Twitch4JInput implements BotInput {
         if (creds.isEmpty()) {
             logger.warn("Twitch credentials could not be found or refreshed, waiting for new Oauth Token to be created!");
             logger.warn(STR."Head to \{OAuthEndpoint.getOauthSetupUrl()} to Setup a new Oauth connection");
-            report(InputStatus.INJURED);
+            HealthManager.reportStatus(Twitch4JInput.class, InputStatus.INJURED);
             creds = createNewOauth();
         }
         //check if still empty after oauth
         if (creds.isEmpty()) {
             logger.error("Could neither load old credentials, nor create new once, aborting input startup!");
-            report(InputStatus.DEAD);
+            HealthManager.reportStatus(Twitch4JInput.class, InputStatus.DEAD);
             return;
         } else {
             logger.warn("Created new Oauth. Warning resolved!");
-            report(InputStatus.STARTING);
+            HealthManager.reportStatus(Twitch4JInput.class, InputStatus.STARTING);
         }
         oAuth2Credential = creds.get();
 
@@ -130,15 +130,7 @@ public class Twitch4JInput implements BotInput {
                 .getFirst()
                 .getId();
         logger.debug("Start successful!");
-        report(InputStatus.HEALTHY);
-
-        // trigger Init of watchtime Service
-        new WatchtimeUpdateService();
-    }
-
-    @Override
-    public InputStatus getHealth() {
-        return health;
+        HealthManager.reportStatus(Twitch4JInput.class, InputStatus.HEALTHY);
     }
 
     @Override
@@ -151,14 +143,6 @@ public class Twitch4JInput implements BotInput {
             twitchClient.close();
         }
         logger.debug("Shutdown successful!");
-    }
-
-    @Override
-    public void runRegistration() {}
-
-    @Override
-    public String threadName() {
-        return "TwitchReading";
     }
 
     private Optional<OAuth2Credential> getRefreshedOauthFromDB(TwitchIdentityProvider iProvider) {
@@ -201,16 +185,10 @@ public class Twitch4JInput implements BotInput {
         return code.map(s -> iProvider.getCredentialByCode(s));
     }
 
-    private void report(InputStatus health) {
-        HealthManager.reportStatus(this, health);
-        this.health = health;
-    }
-
-
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("DD-HH:mm:ss.SSS");
 
     @Subscriber
-    public static void converTwitchMessage(ChannelMessageEvent messageEvent) {
+    public static void convertTwitchMessage(ChannelMessageEvent messageEvent) {
         if (messageEvent.getMessage().toCharArray()[0] == '!') {
             System.out.println(simpleDateFormat.format(new Date()) + " |CHAT | " + messageEvent.getUser().getName() + ": " + messageEvent.getMessage());
         }

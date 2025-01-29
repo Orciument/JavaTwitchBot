@@ -14,8 +14,10 @@
     </appender>
 
     <logger name="talium.inputs" level="WARN"/>
-    <logger name="talium.modules" level="INFO"/>
     <logger name="talium.system" level="INFO"/>
+    <logger name="talium.TwitchBot" level="INFO" additivity="false">
+        <appender-ref ref="SYSTEM"/>
+    </logger>
     <logger name="talium.system.inputSystem.HealthManager" level="INFO" additivity="false">
         <appender-ref ref="SYSTEM"/>
     </logger>

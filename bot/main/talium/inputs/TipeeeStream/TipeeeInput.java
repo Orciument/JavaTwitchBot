@@ -4,6 +4,7 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.engineio.client.EngineIOException;
 import org.apache.commons.lang.StringUtils;
+import talium.Registrar;
 import talium.TwitchBot;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
@@ -14,7 +15,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import talium.system.inputSystem.configuration.InputConfiguration;
 
 import java.io.IOException;
 import java.net.URI;
@@ -52,7 +52,6 @@ public class TipeeeInput implements BotInput {
     private static String channelName;
 
     private Socket socket;
-    private InputStatus health;
     private static final Logger LOGGER = LoggerFactory.getLogger(TipeeeInput.class);
 
     @Override
@@ -61,17 +60,19 @@ public class TipeeeInput implements BotInput {
             socket.close();
         }
         LOGGER.info("Shut down Tipeee input");
-        report(InputStatus.STOPPED);
+        HealthManager.reportStatus(TipeeeInput.class, InputStatus.STOPPED);
     }
 
     @Override
     public void run() {
+        Registrar.registerHealthDescription(TipeeeInput.class, "TipeeeStreamInput", "");
+
         if (apiKey == null || apiKey.isEmpty() && channelName == null || channelName.isEmpty()) {
             LOGGER.warn("TipeeeStream Module is disabled");
-            report(InputStatus.STOPPED);
+            HealthManager.reportStatus(TipeeeInput.class, InputStatus.STOPPED);
             return;
         }
-        report(InputStatus.STARTING);
+        HealthManager.reportStatus(TipeeeInput.class, InputStatus.STARTING);
         LOGGER.info("Stating TipeeeInput for Channel {}", channelName);
         if (tipeeeSocketUrl == null || tipeeeSocketUrl.isEmpty()) {
             LOGGER.info("Getting current Tipeee Socket.io url...");
@@ -83,7 +84,7 @@ public class TipeeeInput implements BotInput {
             socketUrl = new URI(tipeeeSocketUrl + apiKey);
         } catch (URISyntaxException e) {
             LOGGER.error("tipeeeSocketUrl is not a valid url", e);
-            report(InputStatus.DEAD);
+            HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
             throw new RuntimeException(e);
         }
 
@@ -92,7 +93,7 @@ public class TipeeeInput implements BotInput {
 
 
         socket.on(Socket.EVENT_CONNECT_ERROR, objects -> {
-            report(InputStatus.DEAD);
+            HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
             if (objects.length == 1 && objects[0] instanceof EngineIOException && ((EngineIOException) objects[0]).getCause() instanceof IOException io) {
                 if (io.getMessage().equals("403")) {
                     LOGGER.error("TipeeeStream Authentication failed, likely because the Apikey is invalid");
@@ -109,7 +110,7 @@ public class TipeeeInput implements BotInput {
 
         socket.on(Socket.EVENT_CONNECT, _ -> {
             socket.emit("join-room", STR."{ room: '\{apiKey}', username: '\{channelName}'}");
-            report(InputStatus.HEALTHY);
+            HealthManager.reportStatus(TipeeeInput.class, InputStatus.HEALTHY);
         });
 
         socket.on("new-event", data -> TipeeeEventHandler.handleDonationEvent(Arrays.toString(data)));
@@ -140,21 +141,4 @@ public class TipeeeInput implements BotInput {
         }
     }
 
-    @Override
-    public InputStatus getHealth() {
-        return health;
-    }
-
-    @Override
-    public void runRegistration() {}
-
-    @Override
-    public String threadName() {
-        return "TipeeeWebsocket";
-    }
-
-    private void report(InputStatus health) {
-        HealthManager.reportStatus(this, health);
-        this.health = health;
-    }
 }

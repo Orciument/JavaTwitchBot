@@ -3,6 +3,7 @@ package talium;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import talium.inputs.Twitch4J.TwitchUserPermission;
+import talium.system.inputSystem.HealthManager;
 import talium.system.stringTemplates.Template;
 import talium.system.stringTemplates.TemplateService;
 import talium.system.twitchCommands.cooldown.ChatCooldown;
@@ -28,6 +29,16 @@ public class Registrar {
     }
 
     public Registrar() {
+    }
+
+    /// Register Custom HealthUI titel and description
+    public static void registerHealthDescription(String self, String title, String description) {
+        HealthManager.addCustomization(self, title, description);
+
+    }
+    /// Register Custom HealthUI titel and description
+    public static void registerHealthDescription(Class self, String title, String description) {
+        HealthManager.addCustomization(self.getSimpleName(), title, description);
     }
 
     /// Registers an automatically generated command with a callback
