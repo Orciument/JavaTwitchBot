@@ -9,7 +9,6 @@ import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
 import talium.system.coinsWatchtime.WatchtimeUpdateService;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
-import talium.system.inputSystem.InputManager;
 import talium.system.inputSystem.InputStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
