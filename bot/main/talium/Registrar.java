@@ -41,6 +41,15 @@ public class Registrar {
         HealthManager.addCustomization(self.getSimpleName(), title, description);
     }
 
+    public interface ResetableCache {
+        void rebuild();
+    }
+
+    /// Register a function to reset/rebuild a application cache from the panel ui
+    public static void registerResetableChache(String name, String description, ResetableCache cache) {
+        //TODO register cache, show in ui, act on reset HTTP post
+    }
+
     /// Registers an automatically generated command with a callback
     public static void registerCallbackCommand(RuntimeTrigger command) {
         TriggerProvider.addCommandRegistration(command);
