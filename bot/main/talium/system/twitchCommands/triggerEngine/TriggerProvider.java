@@ -131,17 +131,21 @@ public class TriggerProvider {
      */
     public static void addCommandsFromCodeConfig(List<RuntimeTrigger> commands) {
         for (RuntimeTrigger command : commands) {
-            codeTriggerMap.put(command.id(), command);
-            if (triggerService.existsById(command.id())) {
-                continue;
-            }
-            var patterns = command.patterns().stream().map(pattern -> new MessagePattern(pattern.pattern(), true, false, true)).toList();
-            TriggerEntity entity = new TriggerEntity(command.id(), "", patterns, command.permission(), command.userCooldown(), command.globalCooldown(), true, null);
-            try {
-                triggerService.save(entity);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            addCommandRegistration(command);
+        }
+    }
+
+    public static void addCommandRegistration(RuntimeTrigger command) {
+        codeTriggerMap.put(command.id(), command);
+        if (triggerService.existsById(command.id())) {
+            return;
+        }
+        var patterns = command.patterns().stream().map(pattern -> new MessagePattern(pattern.pattern(), true, false, true)).toList();
+        TriggerEntity entity = new TriggerEntity(command.id(), "", patterns, command.permission(), command.userCooldown(), command.globalCooldown(), true, null);
+        try {
+            triggerService.save(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

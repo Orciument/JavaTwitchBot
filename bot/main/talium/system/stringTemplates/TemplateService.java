@@ -60,12 +60,10 @@ public class TemplateService {
         repo.save(template);
     }
 
-    public void saveIfAbsent(List<Template> templates) {
-        for (Template template : templates) {
-            if (repo.existsById(template.id)) {
-                return;
-            }
-            save(template);
+    public void saveIfAbsent(Template template) {
+        if (repo.existsById(template.id)) {
+            return;
         }
+        save(template);
     }
 }

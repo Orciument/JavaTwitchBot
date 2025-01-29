@@ -154,9 +154,7 @@ public class Twitch4JInput implements BotInput {
     }
 
     @Override
-    public InputConfiguration getConfiguration() {
-        return null;
-    }
+    public void runRegistration() {}
 
     @Override
     public String threadName() {
