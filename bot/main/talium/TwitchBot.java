@@ -6,6 +6,7 @@ import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.system.StopWatch;
 import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
+import talium.system.coinsWatchtime.WatchtimeUpdateService;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.InputManager;
@@ -40,6 +41,7 @@ public class TwitchBot {
         startInput(new TipeeeInput(), "Tipeee");
 
         // This section is used to pass the execution/control to different parts of the bot to do some initialisation
+        WatchtimeUpdateService.init();
         WIPWatchtimeCommandServer.init();
 
         TriggerProvider.rebuildTriggerCache();
