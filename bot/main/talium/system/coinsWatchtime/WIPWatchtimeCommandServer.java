@@ -27,8 +27,8 @@ public class WIPWatchtimeCommandServer {
     }
 
     public static void init() {
-        Registrar.registerCallbackCommand("watchtime.getwatchtime", "!watchtime", WIPWatchtimeCommandServer::triggerGetWatchtime);
-        Registrar.registerCallbackCommand("watchtime.getCoins", "!coins", WIPWatchtimeCommandServer::triggerGetCoins);
+        new Registrar.Command("watchtime.getwatchtime", "!watchtime").registerActionCommand(WIPWatchtimeCommandServer::triggerGetWatchtime);
+        new Registrar.Command("watchtime.getCoins", "!coins").registerActionCommand(WIPWatchtimeCommandServer::triggerGetCoins);
         Registrar.registerTemplate("coins.coins", "${wt.username} has ${wt.coins} Coins!");
         Registrar.registerTemplate("coins.watchtime", "${wt.username} has ${wt.daysRounded2} Days of watchtime!");
     }
