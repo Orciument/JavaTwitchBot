@@ -1,9 +1,6 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.VariableValueNullException;
-import talium.system.templateParser.exeptions.UnIterableArgumentException;
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.ifParser.IfInterpreter;
 import talium.system.templateParser.statements.*;
 import talium.system.templateParser.tokens.Comparison;
@@ -103,16 +100,17 @@ public class TemplateInterpreter {
      */
     public static Object getNestedReplacement(String varName, HashMap<String, Object> values) throws VariableValueNullException, NoSuchFieldException, IllegalAccessException {
         String[] variableNames = varName.split("\\.");
-        //TODO make explicit check if key exists, and throw specific error if it doesn't exist
-        if (!values.containsKey(variableNames[0])) {
-            throw new NoSuchFieldException("No key with name " + variableNames[0] + " in variable map");
+        if (variableNames.length == 0) {
+            throw new TemplateSyntaxException("\""+varName+"\" is not a valid field access expression");
         }
         Object variable = values.get(variableNames[0]);
         for (int i = 1; i < variableNames.length; i++) {
             if (variable == null) {
                 throw new VariableValueNullException(variableNames[i - 1]);
             }
+            //TODO wrap getDeclaredField errors
             Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
+            //TODO wrap setAccessible errors
             declaredField.setAccessible(true);
             variable = declaredField.get(variable);
         }
