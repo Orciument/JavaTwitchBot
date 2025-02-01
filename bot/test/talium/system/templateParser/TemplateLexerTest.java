@@ -1,7 +1,9 @@
 package talium.system.templateParser;
 
 import org.junit.jupiter.api.Test;
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
+import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
+import talium.system.templateParser.exeptions.UnexpectedTokenException;
+import talium.system.templateParser.exeptions.UnsupportedDirective;
 import talium.system.templateParser.tokens.TemplateTokenKind;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -11,16 +13,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 // completion of a statement is not yet checked at this stage, so a missing else directive is not an error at this stage
 public class TemplateLexerTest {
     @Test
-    void missing_closing_bracket() {
+    void missing_closing_bracket() throws UnsupportedDirective, UnexpectedEndOfInputException {
         TemplateLexer lex = new TemplateLexer("Hello, ${var.name!");
         try {
             lex.parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedTokenException _) {}
     }
 
     @Test
-    void missing_dollar() {
+    void missing_dollar() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         var tokens = new TemplateLexer("Hello, {var.name}!").parse();
         assert tokens.size() == 1;
         assert tokens.getFirst().kind() == TemplateTokenKind.TEXT;
@@ -28,50 +30,50 @@ public class TemplateLexerTest {
     }
 
     @Test
-    void missing_closing_bracket_directive() {
+    void missing_closing_bracket_directive() throws UnexpectedTokenException, UnsupportedDirective {
         TemplateLexer lex = new TemplateLexer("Hello, %{ if var.name != \"\" }${var.name}%{ else }unnamed%{ endif ");
         try {
             lex.parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedEndOfInputException _) { }
     }
 
     @Test
-    void missing_percent() {
+    void missing_percent() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         TemplateLexer lex = new TemplateLexer("Hello, %{ if var.name != \"\" }${var.name}%{ else }unnamed{ endif }");
         System.out.println(lex.parse());
     }
 
     @Test
-    void malformed_endIf() {
+    void malformed_endIf() throws UnsupportedDirective, UnexpectedEndOfInputException {
         TemplateLexer lex = new TemplateLexer("Hello, %{ if var.name != \"\" }${var.name}%{ else }unnamed%{ endif dadasdadad }");
         try {
             lex.parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedTokenException _) { }
     }
 
     @Test
-    void directive_start_in_text() {
+    void directive_start_in_text() throws UnsupportedDirective, UnexpectedEndOfInputException {
         try {
             new TemplateLexer("template text % mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedTokenException _) { }
         try {
             new TemplateLexer("template text %c mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedTokenException _) { }
     }
 
     @Test
-    void variable_start_in_text() {
+    void variable_start_in_text() throws UnsupportedDirective, UnexpectedEndOfInputException {
         try {
             new TemplateLexer("template text $ mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedTokenException _) { }
         try {
             new TemplateLexer("template text $c mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (TemplateSyntaxException _) {}
+        } catch (UnexpectedTokenException _) { }
     }
 }

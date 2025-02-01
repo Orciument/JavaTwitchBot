@@ -1,6 +1,7 @@
 package talium.system.templateParser.ifParser;
 
 import talium.system.templateParser.exeptions.TemplateSyntaxException;
+import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
 import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
 import talium.system.templateParser.statements.Equals;
 import talium.system.templateParser.statements.VarStatement;
@@ -13,13 +14,13 @@ import static talium.system.templateParser.ifParser.IfParser.parse;
 public class IfParserTest {
 
     @Test
-    void test_success() throws UnsupportedComparisonOperator {
+    void test_success() throws UnsupportedComparisonOperator, TemplateSyntaxException, UnexpectedEndOfInputException {
         var comp = new Comparison(VarStatement.create("var.name"), Equals.NOT_EQUALS, "test");
         assert parse("var.name != \"test\"").equals(comp);
     }
 
     @Test
-    void invalid_operator() throws UnsupportedComparisonOperator {
+    void invalid_operator() throws UnsupportedComparisonOperator, TemplateSyntaxException, UnexpectedEndOfInputException {
         try {
             parse("var.name !!== \"test\"");
             fail("Should have thrown UnsupportedComparisonOperator");
@@ -33,7 +34,7 @@ public class IfParserTest {
     }
 
     @Test
-    void test_types() throws UnsupportedComparisonOperator {
+    void test_types() throws UnsupportedComparisonOperator, TemplateSyntaxException, UnexpectedEndOfInputException {
         var bool = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, false);
         assert parse("var.name == false").equals(bool);
 
