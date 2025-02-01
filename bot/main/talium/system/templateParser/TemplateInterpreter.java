@@ -1,6 +1,6 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.ArgumentValueNullException;
+import talium.system.templateParser.exeptions.VariableValueNullException;
 import talium.system.templateParser.exeptions.UnIterableArgumentException;
 import talium.system.templateParser.exeptions.UnsupportedComparandType;
 import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
@@ -24,7 +24,10 @@ public class TemplateInterpreter {
      * @param values a map with all top level variables and their names
      * @return the resulting string
      */
-    public static String populate(List<Statement> template, HashMap<String, Object> values) throws NoSuchFieldException, ArgumentValueNullException, IllegalAccessException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+    public static String populate(List<Statement> template, HashMap<String, Object> values) throws NoSuchFieldException, VariableValueNullException, IllegalAccessException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        if (values == null) {
+            values = new HashMap<>();
+        }
         String out = "";
         for (Statement statement : template) {
             if (statement instanceof TextStatement textStatement) {
@@ -98,16 +101,23 @@ public class TemplateInterpreter {
      * @return value of the variable
      * @apiNote Does not support getters or any functions
      */
-    public static Object getNestedReplacement(String varName, HashMap<String, Object> values) throws ArgumentValueNullException, NoSuchFieldException, IllegalAccessException {
+    public static Object getNestedReplacement(String varName, HashMap<String, Object> values) throws VariableValueNullException, NoSuchFieldException, IllegalAccessException {
         String[] variableNames = varName.split("\\.");
+        //TODO make explicit check if key exists, and throw specific error if it doesn't exist
+        if (!values.containsKey(variableNames[0])) {
+            throw new NoSuchFieldException("No key with name " + variableNames[0] + " in variable map");
+        }
         Object variable = values.get(variableNames[0]);
         for (int i = 1; i < variableNames.length; i++) {
             if (variable == null) {
-                throw new ArgumentValueNullException(variableNames[i - 1]);
+                throw new VariableValueNullException(variableNames[i - 1]);
             }
             Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
             declaredField.setAccessible(true);
             variable = declaredField.get(variable);
+        }
+        if (variable == null) {
+            //TODO
         }
         return variable;
     }
