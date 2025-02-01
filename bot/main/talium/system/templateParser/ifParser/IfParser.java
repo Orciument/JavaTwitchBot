@@ -1,9 +1,7 @@
 package talium.system.templateParser.ifParser;
 
 import talium.system.templateParser.CharakterStream;
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
-import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.statements.Equals;
 import talium.system.templateParser.statements.VarStatement;
 import talium.system.templateParser.tokens.Comparison;
@@ -30,7 +28,7 @@ public class IfParser {
      * @param srcString entire unparsed if head
      * @return Comparison object
      */
-    public static Comparison parse(String srcString) throws UnsupportedComparisonOperator {
+    public static Comparison parse(String srcString) throws UnexpectedEndOfInputException, TemplateSyntaxException, UnsupportedComparisonOperator {
         CharakterStream src = new CharakterStream(srcString);
         IfToken[] tokens = new IfToken[3];
         for (int i = 0; i < 3; i++) {
@@ -65,7 +63,7 @@ public class IfParser {
      * @param src source character stream
      * @return the parsed token
      */
-    private static IfToken parseToken(CharakterStream src) throws UnexpectedEndOfInputException {
+    private static IfToken parseToken(CharakterStream src) throws UnexpectedEndOfInputException, UnexpectedTokenException {
         //TODO rebuild to consume one character per loop, save current state in var
         if (src.isEOF()) {
             throw new UnexpectedEndOfInputException();
@@ -104,7 +102,7 @@ public class IfParser {
     /**
      * get inner value out of token
      */
-    private static Object tokenToObject(IfToken token) {
+    private static Object tokenToObject(IfToken token) throws TemplateSyntaxException {
         return switch (token.kind()) {
             case STRING -> token.value();
             case VAR -> VarStatement.create(token.value());
@@ -117,7 +115,7 @@ public class IfParser {
             }
             case DOUBLE -> Double.parseDouble(token.value());
             case BOOLEAN -> Boolean.parseBoolean(token.value());
-            case COMPARISON -> throw new RuntimeException("Another Comparison not a valid Object for an comparison comparand");
+            case COMPARISON -> throw new TemplateSyntaxException("Another Comparison not a valid Object for an comparison comparand");
         };
     }
 }

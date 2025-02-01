@@ -1,7 +1,6 @@
 package talium.system.templateParser.ifParser;
 
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.ImpossibleComparisonException;
 import talium.system.templateParser.statements.Equals;
 import talium.system.templateParser.tokens.Comparison;
 
@@ -27,7 +26,7 @@ public class IfInterpreter {
      * @param comp prepared comparison
      * @return boolean result
      */
-    public static boolean compare(Comparison comp) throws UnsupportedComparisonOperator, UnsupportedComparandType {
+    public static boolean compare(Comparison comp) throws ImpossibleComparisonException {
         Object l = comp.left();
         Object r = comp.right();
         if (l instanceof String || l instanceof Character && r instanceof String || r instanceof Character) {
@@ -37,14 +36,14 @@ public class IfInterpreter {
                 case EQUALS -> l.equals(r);
                 case NOT_EQUALS -> !l.equals(r);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
-                        throw new UnsupportedComparisonOperator(STR."\{comp.equals().name()} is not a supported comparison operation between Strings/Charactern");
+                        throw new ImpossibleComparisonException(STR."\{comp.equals().name()} is not a supported comparison operation between Strings/Charactern");
             };
         } else if (l instanceof Boolean && r instanceof Boolean) {
             return switch (comp.equals()) {
                 case EQUALS -> l.equals(r);
                 case NOT_EQUALS -> !l.equals(r);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
-                        throw new UnsupportedComparisonOperator(STR."\{comp.equals().name()} is not a supported comparison operation between booleans");
+                        throw new ImpossibleComparisonException(STR."\{comp.equals().name()} is not a supported comparison operation between booleans");
             };
         } else if ((l instanceof Double || l instanceof Float) && (r instanceof Double || r instanceof Float)) {
             Double ld = ((Number) l).doubleValue();
@@ -55,7 +54,7 @@ public class IfInterpreter {
             Long rl = ((Number) r).longValue();
             return compareLongs(ll, comp.equals(), rl);
         } else {
-            throw new UnsupportedComparandType(STR."Types \{l.getClass()} and \{r.getClass()} are not comparable to each other");
+            throw new ImpossibleComparisonException(STR."Types \{l.getClass()} and \{r.getClass()} are not comparable to each other");
         }
     }
 

@@ -1,7 +1,6 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.ifParser.IfParser;
 import talium.system.templateParser.statements.*;
 import talium.system.templateParser.tokens.Comparison;
@@ -23,15 +22,11 @@ public class TemplateParser {
         this.src = new TemplateLexer(src);
     }
 
-    public TemplateParser(TemplateLexer src) {
-        this.src = src;
-    }
-
     /**
      * Parses the stream of major tokens into a stream of statements.
      * Invokes minor if and for parsers if needed.
      */
-    public List<Statement> parse() throws UnsupportedComparisonOperator {
+    public List<Statement> parse() throws ParsingException {
         List<Statement> statements = new ArrayList<>();
         while (!src.isEOF()) {
             statements.add(parseToken());
@@ -42,7 +37,7 @@ public class TemplateParser {
     /**
      * Parses the next statement out of the stream of tokens
      */
-    public Statement parseToken() throws UnsupportedComparisonOperator {
+    public Statement parseToken() throws ParsingException {
         TemplateToken current = src.next();
         if (current == null) {
             return null;

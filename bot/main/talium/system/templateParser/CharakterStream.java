@@ -1,12 +1,12 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
 import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
+import talium.system.templateParser.exeptions.UnexpectedTokenException;
 
 /**
  * A indexed Stream of characters for parsing.
  */
-public class CharakterStream implements TokenStream<Character> {
+public class CharakterStream {
     String src;
     int pos;
 
@@ -14,14 +14,12 @@ public class CharakterStream implements TokenStream<Character> {
         this.src = src;
     }
 
-    @Override
-    public Character peek() throws UnsupportedOperationException {
+    public Character peek() throws UnexpectedEndOfInputException {
         if (isEOF())
             throw new UnexpectedEndOfInputException();
         return src.charAt(pos);
     }
 
-    @Override
     public Character next() throws UnexpectedEndOfInputException {
         if (isEOF())
             throw new UnexpectedEndOfInputException();
@@ -35,17 +33,16 @@ public class CharakterStream implements TokenStream<Character> {
      * If a different character is encountered, a syntax exception is thrown.
      * @param c the next expected character
      */
-    public void consume(Character c) {
+    public void consume(Character c) throws UnexpectedTokenException, UnexpectedEndOfInputException {
         if (isEOF()) {
-            throw new TemplateSyntaxException(String.valueOf(c), "END-OF-INPUT", pos - 1, src);
+            throw new UnexpectedTokenException(c, "END-OF-INPUT", pos - 1, src);
         }
         Character next = next();
         if (next != c) {
-            throw new TemplateSyntaxException(c, next, pos - 1, src);
+            throw new UnexpectedTokenException(c, next, pos - 1, src);
         }
     }
 
-    @Override
     public boolean isEOF() {
         return pos == src.length();
     }

@@ -1,8 +1,8 @@
 package talium.system.templateParser;
 
 
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
 import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
+import talium.system.templateParser.exeptions.UnexpectedTokenException;
 import talium.system.templateParser.exeptions.UnsupportedDirective;
 import talium.system.templateParser.tokens.TemplateTokenKind;
 import talium.system.templateParser.tokens.TemplateToken;
@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * A Lexer for String Templates that consumes a CharacterStream and provides the tokens as a TokenStream
  */
-public class TemplateLexer implements TokenStream<TemplateToken> {
+public class TemplateLexer {
     CharakterStream src;
     List<TemplateToken> tokens;
     int pos;
@@ -28,16 +28,10 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
      *
      * @return list of major tokens
      */
-    public List<TemplateToken> parse() {
+    public List<TemplateToken> parse() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         List<TemplateToken> list = new ArrayList<>();
         while (!src.isEOF()) {
-            TemplateToken next;
-            try {
-                next = next();
-            } catch (UnexpectedEndOfInputException e) {
-                e.printStackTrace();
-                break;
-            }
+            TemplateToken next = next();
             if (next == null) {
                 break;
             }
@@ -46,16 +40,14 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
         return list;
     }
 
-    @Override
-    public TemplateToken peek() {
+    public TemplateToken peek() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         if (pos >= tokens.size()) {
             tokens.add(parseToken());
         }
         return tokens.get(pos);
     }
 
-    @Override
-    public TemplateToken next() {
+    public TemplateToken next() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         if (pos >= tokens.size()) {
             tokens.add(parseToken());
         }
@@ -70,12 +62,13 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
      *
      * @param token the next expected token
      */
-    public void consume(TemplateTokenKind token) {
+    public void consume(TemplateTokenKind token) throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         if (isEOF()) {
-            throw new TemplateSyntaxException(token.name(), "END-OF-INPUT", src.pos() - 1, src.src());
-        } TemplateToken next = next();
+            throw new UnexpectedTokenException(token.name(), "END-OF-INPUT", src.pos() - 1, src.src());
+        }
+        TemplateToken next = next();
         if (next.kind() != token) {
-            throw new TemplateSyntaxException(token.name(), next.kind().name(), src.pos() - 1, src.src());
+            throw new UnexpectedTokenException(token.name(), next.kind().name(), src.pos() - 1, src.src());
         }
     }
 
@@ -84,7 +77,7 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
      *
      * @return the next token
      */
-    private TemplateToken parseToken() throws UnexpectedEndOfInputException {
+    private TemplateToken parseToken() throws UnexpectedTokenException, UnexpectedEndOfInputException, UnsupportedDirective {
         if (src.isEOF()) {
             return null;
         }
@@ -137,7 +130,6 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
         }
     }
 
-    @Override
     public boolean isEOF() {
         return src.isEOF();
     }
