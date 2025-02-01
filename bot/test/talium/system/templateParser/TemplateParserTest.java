@@ -113,7 +113,7 @@ public class TemplateParserTest {
             if (src.contains("$") || src.contains("%")) {
                 System.out.println("i: " + iteration + " -> Statement Stream:");
                 System.out.println(statements);
-                fail("Should  likely have thrown for " + src);
+                fail("Should likely have thrown for: " + src);
             }
         } catch (TemplateSyntaxException | UnexpectedEndOfInputException | UnsupportedComparisonOperator |
                  UnsupportedDirective | NoSuchFieldException _) {
@@ -121,5 +121,11 @@ public class TemplateParserTest {
             System.out.println("i: " + iteration + " -> Source Input: " + src);
             fail("Unexpected Exception thrown: " + e.getMessage(), e);
         }
+    }
+
+    @Test
+    void testWeirdFor() {
+        //TODO this procudes a weird null in the statement list
+        test("for\"!=   1}for%{   endif }==<  ", 1);
     }
 }

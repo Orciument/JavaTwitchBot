@@ -1,5 +1,6 @@
 package talium.system.templateParser;
 
+import talium.system.templateParser.exeptions.TemplateSyntaxException;
 import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
 import talium.system.templateParser.ifParser.IfParser;
 import talium.system.templateParser.statements.*;
@@ -81,8 +82,11 @@ public class TemplateParser {
         }
         if (current.kind() == TemplateTokenKind.FOR_HEAD) {
             String[] head = current.value().split(" in ");
+            if (head.length < 2) {
+                throw new TemplateSyntaxException("Missing \"in\" in for definition!");
+            }
             if (StringUtils.countMatches(head[1], "[*]") > 1) {
-                throw new RuntimeException("Only one wildcard allowed in a for statement");
+                throw new TemplateSyntaxException("Only one wildcard allowed in a for statement");
             }
             List<Statement> body = new ArrayList<>();
             while (!src.isEOF()) { // mostly equivalent to while(true), but with a overrun check
