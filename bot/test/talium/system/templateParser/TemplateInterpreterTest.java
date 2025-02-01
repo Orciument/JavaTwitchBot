@@ -1,6 +1,6 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.ArgumentValueNullException;
+import talium.system.templateParser.exeptions.VariableValueNullException;
 import talium.system.templateParser.exeptions.UnIterableArgumentException;
 import talium.system.templateParser.exeptions.UnsupportedComparandType;
 import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
@@ -52,7 +52,7 @@ public class TemplateInterpreterTest {
     @Nested
     class Populate {
         @Test
-        void iterate_non_iterable() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void iterate_non_iterable() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException, UnsupportedComparandType, UnsupportedComparisonOperator {
             HashMap<String, Object> map = new HashMap<>();
             map.put("loopVar", "this_is_not_a_list");
             try {
@@ -63,21 +63,21 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void var() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void var() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
             HashMap<String, Object> map = new HashMap<>();
             map.put("name", "dummy name");
             assert populate(TEMPLATE_VAR, map).equals("Hello, dummy name!");
         }
 
         @Test
-        void iterate_empty_list() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void iterate_empty_list() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
             HashMap<String, Object> map = new HashMap<>();
             map.put("loopVar", new ArrayList<>());
             assert populate(TEMPLATE_LOOP, map).equals("Hello,!");
         }
 
         @Test
-        void nestedLoop() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void nestedLoop() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
             HashMap<String, Object> map = new HashMap<>();
             ArrayList<List<String>> list = new ArrayList<>();
             list.add(List.of("t-1.1", "t-1.2"));
@@ -87,14 +87,14 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void if_() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void if_() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
             HashMap<String, Object> map = new HashMap<>();
             map.put("compLeft", "testString");
             assert populate(TEMPLATE_IF, map).equals("Hello, testString!");
         }
 
         @Test
-        void wrong_condition_type() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparisonOperator {
+        void wrong_condition_type() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException, UnIterableArgumentException, UnsupportedComparisonOperator {
             HashMap<String, Object> map = new HashMap<>();
             map.put("compLeft", false);
             try {
@@ -111,7 +111,7 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void string() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void string() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("test", "testing String");
             map.put("dummyVar", 23899);
@@ -119,7 +119,7 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void integer() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void integer() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("integerValue", 23899);
             map.put("dummyVar", "testing String");
@@ -127,7 +127,7 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void object_path() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void object_path() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException {
             TestClass testClass = new TestClass("testString", 23899);
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
@@ -136,7 +136,7 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void list() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void list() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException {
             HashMap<String, Object> map = new HashMap<>();
             ArrayList<String> list = new ArrayList<>();
             list.add("dummyValue");
@@ -154,12 +154,12 @@ public class TemplateInterpreterTest {
             try {
                 getNestedReplacement("testObject.testInteger", map);
                 fail("Should have thrown NullArgumentException");
-            } catch (ArgumentValueNullException _) {
+            } catch (VariableValueNullException _) {
             }
         }
 
         @Test
-        void end_value_null() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void end_value_null() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException {
             TestClass testClass = new TestClass(null, 23899);
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
@@ -168,7 +168,7 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void private_var() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void private_var() throws NoSuchFieldException, IllegalAccessException, VariableValueNullException {
             class PrivateClass {
                 private final String testString;
                 final int testInteger;
@@ -186,7 +186,7 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void missing_field() throws IllegalAccessException, ArgumentValueNullException {
+        void missing_field() throws IllegalAccessException, VariableValueNullException {
             TestClass testClass = new TestClass("testString", 23899);
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);

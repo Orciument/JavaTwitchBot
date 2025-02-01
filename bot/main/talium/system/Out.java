@@ -2,11 +2,10 @@ package talium.system;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.inputs.Twitch4J.TwitchApi;
 import talium.system.stringTemplates.Template;
 import talium.system.stringTemplates.TemplateService;
-import talium.system.templateParser.exeptions.ArgumentValueNullException;
+import talium.system.templateParser.exeptions.VariableValueNullException;
 import talium.system.templateParser.exeptions.UnIterableArgumentException;
 import talium.system.templateParser.exeptions.UnsupportedComparandType;
 import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
@@ -50,7 +49,7 @@ public class Out {
             try {
                 var parsed = new TemplateParser(template).parse();
                 message = populate(parsed, values);
-            } catch (UnsupportedComparisonOperator | NoSuchFieldException | ArgumentValueNullException |
+            } catch (UnsupportedComparisonOperator | NoSuchFieldException | VariableValueNullException |
                      IllegalAccessException | UnIterableArgumentException | UnsupportedComparandType e) {
                 //TODO handle exceptions
                 // the exceptions should be displayed in the console and in the webconsole with a fairly high priority

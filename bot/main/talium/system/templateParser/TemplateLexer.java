@@ -3,6 +3,7 @@ package talium.system.templateParser;
 
 import talium.system.templateParser.exeptions.TemplateSyntaxException;
 import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
+import talium.system.templateParser.exeptions.UnsupportedDirective;
 import talium.system.templateParser.tokens.TemplateTokenKind;
 import talium.system.templateParser.tokens.TemplateToken;
 
@@ -87,14 +88,14 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
         if (src.isEOF()) {
             return null;
         }
-        if (src.peek() == '$' && src.future() == '{') {
+        if (src.peek() == '$') {
             src.consume('$');
             src.consume('{');
             String varName = src.readUntil('}');
             src.consume('}');
             return new TemplateToken(TemplateTokenKind.VAR, varName);
 
-        } else if (src.peek() == '%' && src.future() == '{') {
+        } else if (src.peek() == '%') {
             // Get type of directive if or for
             src.consume('%');
             src.consume('{');
@@ -124,7 +125,7 @@ public class TemplateLexer implements TokenStream<TemplateToken> {
                 src.consume('}');
                 return new TemplateToken(TemplateTokenKind.FOR_END, "");
             } else {
-                throw new RuntimeException(STR."Directive not supported: \{directive}");
+                throw new UnsupportedDirective(STR."Directive not supported: \{directive}");
             }
         } else {
             String buffer = "";
