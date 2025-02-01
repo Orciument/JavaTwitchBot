@@ -29,12 +29,16 @@ public class IfInterpreter {
     public static boolean compare(Comparison comp) throws ImpossibleComparisonException {
         Object l = comp.left();
         Object r = comp.right();
-        if (l instanceof String || l instanceof Character && r instanceof String || r instanceof Character) {
-            l = l.toString();
-            r = r.toString();
+        if (l == null && r == null) {
+            return true;
+        } else if (l == null || r == null) {
+            return false;
+        } else if ((l instanceof String || l instanceof Character) && (r instanceof String || r instanceof Character)) {
+            String left = l.toString();
+            String right = r.toString();
             return switch (comp.equals()) {
-                case EQUALS -> l.equals(r);
-                case NOT_EQUALS -> !l.equals(r);
+                case EQUALS -> left.equals(right);
+                case NOT_EQUALS -> !left.equals(right);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
                         throw new ImpossibleComparisonException(STR."\{comp.equals().name()} is not a supported comparison operation between Strings/Charactern");
             };

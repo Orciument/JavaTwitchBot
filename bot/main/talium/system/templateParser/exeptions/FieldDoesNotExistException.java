@@ -3,7 +3,7 @@ package talium.system.templateParser.exeptions;
 import java.util.Arrays;
 import java.util.Set;
 
-public class FieldDoesNotExistException extends RuntimeException {
+public class FieldDoesNotExistException extends InterpretationException {
     public FieldDoesNotExistException(String name, Set<String> envNames) {
         super("No Field with name " + name + " exists in environment. Env: " + Arrays.toString(envNames.toArray()));
     }
