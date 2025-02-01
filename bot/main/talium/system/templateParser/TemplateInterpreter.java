@@ -30,16 +30,16 @@ public class TemplateInterpreter {
             if (statement instanceof TextStatement textStatement) {
                 out += textStatement.text();
             } else if (statement instanceof VarStatement varStatement) {
-                out += getNestedReplacement(varStatement.name(), values).toString();
+                out += getNestedReplacement(varStatement, values).toString();
             } else if (statement instanceof IfStatement ifStatement) {
                 // replace Vars with actual values
                 Object left = ifStatement.comparison().left();
                 if (left instanceof VarStatement leftVar) {
-                    left = castToValidInput(getNestedReplacement(leftVar.name(), values));
+                    left = castToValidInput(getNestedReplacement(leftVar, values));
                 }
                 Object right = ifStatement.comparison().right();
                 if (right instanceof VarStatement rightVar) {
-                    right = castToValidInput(getNestedReplacement(rightVar.name(), values));
+                    right = castToValidInput(getNestedReplacement(rightVar, values));
                 }
 
                 boolean condition = IfInterpreter.compare(new Comparison(left, ifStatement.comparison().equals(), right));
@@ -50,7 +50,8 @@ public class TemplateInterpreter {
                 }
             } else if (statement instanceof LoopStatement loop) {
                 String[] varParts = loop.var().split("\\[*]");
-                Object nestedReplacement = getNestedReplacement(varParts[0], values);
+                //TODO here is probably also an error
+                Object nestedReplacement = getNestedReplacement(VarStatement.create(varParts[0]), values);
 
                 if (!(nestedReplacement instanceof Iterable<?>)) {
                     throw new UnIterableArgumentException(varParts[0]);
@@ -60,7 +61,7 @@ public class TemplateInterpreter {
                 for (Object item : (Iterable<Object>) nestedReplacement) {
                     values.put(loop.name(), item);
                     if (varParts.length > 1) {
-                        values.put(loop.name(), getNestedReplacement(varParts[1], values));
+                        values.put(loop.name(), getNestedReplacement(VarStatement.create(varParts[1]), values));
                     }
                     out += populate(loop.body(), values);
                 }
@@ -93,28 +94,37 @@ public class TemplateInterpreter {
      * Tries to resolve and get the Value at the given variable path.
      * Throws an Exception if the path does not exist.
      *
-     * @param varName dot . delimited path of variable names
+     * @param varExpr dot . delimited path of variable names
      * @param values  List of top level variables
      * @return value of the variable
      * @apiNote Does not support getters or any functions
      */
-    public static Object getNestedReplacement(String varName, HashMap<String, Object> values) throws VariableValueNullException, NoSuchFieldException, IllegalAccessException {
-        String[] variableNames = varName.split("\\.");
+    public static Object getNestedReplacement(VarStatement varExpr, HashMap<String, Object> values) throws VariableValueNullException, NoSuchFieldException, IllegalAccessException {
+        String[] variableNames = varExpr.accessExpr().split("\\.");
         if (variableNames.length == 0) {
-            throw new TemplateSyntaxException("\""+varName+"\" is not a valid field access expression");
+            throw new TemplateSyntaxException("\""+varExpr.accessExpr()+"\" is not a valid field access expression");
+        }
+        if (!values.containsKey(variableNames[0])) {
+            throw new FieldDoesNotExistException(variableNames[0], values.keySet());
         }
         Object variable = values.get(variableNames[0]);
         for (int i = 1; i < variableNames.length; i++) {
             if (variable == null) {
                 throw new VariableValueNullException(variableNames[i - 1]);
             }
-            //TODO wrap getDeclaredField errors
-            Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
-            //TODO wrap setAccessible errors
-            declaredField.setAccessible(true);
-            variable = declaredField.get(variable);
+            try {
+                //TODO check if variable name is null
+                //TODO wrap getDeclaredField errors
+                //TODO wrap setAccessible errors
+                Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
+                declaredField.setAccessible(true);
+                variable = declaredField.get(variable);
+            } catch (NoSuchFieldException _) {
+                throw new FieldDoesNotExistException(variableNames[i], variable.getClass());
+            }
         }
         if (variable == null) {
+            System.out.println("input: " + varExpr.accessExpr());
             //TODO
         }
         return variable;

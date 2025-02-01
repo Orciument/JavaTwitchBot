@@ -1,5 +1,6 @@
 package talium.system.templateParser;
 
+import org.aspectj.weaver.ast.Var;
 import talium.system.templateParser.exeptions.VariableValueNullException;
 import talium.system.templateParser.exeptions.UnIterableArgumentException;
 import talium.system.templateParser.exeptions.UnsupportedComparandType;
@@ -18,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class TemplateInterpreterTest {
     static List<Statement> TEMPLATE_VAR = Arrays.asList(
             new TextStatement("Hello, "),
-            new VarStatement("name"),
+            VarStatement.create("name"),
             new TextStatement("!")
     );
     static List<Statement> TEMPLATE_IF = Arrays.asList(
             new TextStatement("Hello, "),
-            new IfStatement(new Comparison(new VarStatement("compLeft"), Equals.EQUALS, "testString"),
-                    List.of(new VarStatement("compLeft")),
+            new IfStatement(new Comparison(VarStatement.create("compLeft"), Equals.EQUALS, "testString"),
+                    List.of(VarStatement.create("compLeft")),
                     List.of(new TextStatement("unnamed"))
             ),
             new TextStatement("!")
@@ -33,7 +34,7 @@ public class TemplateInterpreterTest {
             new TextStatement("Hello,"),
             new LoopStatement("varName", "loopVar", Arrays.asList(
                     new TextStatement(" "),
-                    new VarStatement("varName")
+                    VarStatement.create("varName")
             )),
             new TextStatement("!")
     );
@@ -42,7 +43,7 @@ public class TemplateInterpreterTest {
             new LoopStatement("innerLoop", "loopVar", Arrays.asList(
                     new LoopStatement("varName", "innerLoop", Arrays.asList(
                             new TextStatement(" "),
-                            new VarStatement("varName")
+                            VarStatement.create("varName")
                     )),
                     new TextStatement(" |")
             )),
@@ -115,7 +116,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("test", "testing String");
             map.put("dummyVar", 23899);
-            assert getNestedReplacement("test", map).equals("testing String");
+            assert getNestedReplacement(VarStatement.create("test"), map).equals("testing String");
         }
 
         @Test
@@ -123,7 +124,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("integerValue", 23899);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("integerValue", map).equals(23899);
+            assert getNestedReplacement(VarStatement.create("integerValue"), map).equals(23899);
         }
 
         @Test
@@ -132,7 +133,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("testObject.testInteger", map).equals(23899);
+            assert getNestedReplacement(VarStatement.create("testObject.testInteger"), map).equals(23899);
         }
 
         @Test
@@ -143,7 +144,7 @@ public class TemplateInterpreterTest {
             list.add("dummyString");
             map.put("listVar", list);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("listVar", map).equals(list);
+            assert getNestedReplacement(VarStatement.create("listVar"), map).equals(list);
         }
 
         @Test
@@ -152,7 +153,7 @@ public class TemplateInterpreterTest {
             map.put("testObject", null);
             map.put("dummyVar", "testing String");
             try {
-                getNestedReplacement("testObject.testInteger", map);
+                getNestedReplacement(VarStatement.create("testObject.testInteger"), map);
                 fail("Should have thrown NullArgumentException");
             } catch (VariableValueNullException _) {
             }
@@ -164,7 +165,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("testObject.testString", map) == null;
+            assert getNestedReplacement(VarStatement.create("testObject.testString"), map) == null;
         }
 
         @Test
@@ -182,7 +183,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("testObject.testString", map).equals("testString");
+            assert getNestedReplacement(VarStatement.create("testObject.testString"), map).equals("testString");
         }
 
         @Test
@@ -192,7 +193,7 @@ public class TemplateInterpreterTest {
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
             try {
-                getNestedReplacement("testObject.testBoolean", map);
+                getNestedReplacement(VarStatement.create("testObject.testBoolean"), map);
             } catch (NoSuchFieldException _) {
             }
         }
