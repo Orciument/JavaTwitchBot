@@ -1,6 +1,6 @@
 package talium.system.templateParser.exeptions;
 
-public class TemplateSyntaxException extends RuntimeException {
+public class TemplateSyntaxException extends ParsingException {
     public TemplateSyntaxException(String expected, String actual, int atIndex, String source) {
         super(STR."Excepted: '\{expected}' but found '\{actual}', at Index: \{atIndex} in template \"\{source}\"");
     }

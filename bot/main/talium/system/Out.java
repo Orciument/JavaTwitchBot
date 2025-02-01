@@ -5,13 +5,12 @@ import org.springframework.stereotype.Component;
 import talium.inputs.Twitch4J.TwitchApi;
 import talium.system.stringTemplates.Template;
 import talium.system.stringTemplates.TemplateService;
-import talium.system.templateParser.exeptions.VariableValueNullException;
-import talium.system.templateParser.exeptions.UnIterableArgumentException;
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.TemplateParser;
+import talium.system.templateParser.statements.Statement;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -46,11 +45,16 @@ public class Out {
 
         public static String sendRawTemplate(String template, HashMap<String, Object> values) {
             String message;
+            List<Statement> parsed;
             try {
-                var parsed = new TemplateParser(template).parse();
+                parsed = new TemplateParser(template).parse();
+            } catch (ParsingException e) {
+                // TODO display exceptions, but this should not throw exceptions, since a parsing check should be done on save, so it should still work here
+                throw new RuntimeException(e);
+            }
+            try {
                 message = populate(parsed, values);
-            } catch (UnsupportedComparisonOperator | NoSuchFieldException | VariableValueNullException |
-                     IllegalAccessException | UnIterableArgumentException | UnsupportedComparandType e) {
+            } catch (InterpretationException e) {
                 //TODO handle exceptions
                 // the exceptions should be displayed in the console and in the webconsole with a fairly high priority
                 throw new RuntimeException(e);

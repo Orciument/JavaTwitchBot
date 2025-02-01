@@ -6,6 +6,7 @@ import talium.system.templateParser.statements.*;
 import talium.system.templateParser.tokens.Comparison;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class TemplateInterpreter {
      * @param values a map with all top level variables and their names
      * @return the resulting string
      */
-    public static String populate(List<Statement> template, HashMap<String, Object> values) throws NoSuchFieldException, VariableValueNullException, IllegalAccessException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+    public static String populate(List<Statement> template, HashMap<String, Object> values) throws InterpretationException  {
         if (values == null) {
             values = new HashMap<>();
         }
@@ -51,7 +52,11 @@ public class TemplateInterpreter {
             } else if (statement instanceof LoopStatement loop) {
                 String[] varParts = loop.var().split("\\[*]");
                 //TODO here is probably also an error
-                Object nestedReplacement = getNestedReplacement(VarStatement.create(varParts[0]), values);
+                // this varstatement should be created in parsing
+                Object nestedReplacement = null;
+                try {
+                    nestedReplacement = getNestedReplacement(VarStatement.create(varParts[0]), values);
+                } catch (TemplateSyntaxException _) {}
 
                 if (!(nestedReplacement instanceof Iterable<?>)) {
                     throw new UnIterableArgumentException(varParts[0]);
@@ -61,7 +66,9 @@ public class TemplateInterpreter {
                 for (Object item : (Iterable<Object>) nestedReplacement) {
                     values.put(loop.name(), item);
                     if (varParts.length > 1) {
+                        try {
                         values.put(loop.name(), getNestedReplacement(VarStatement.create(varParts[1]), values));
+                        } catch (TemplateSyntaxException _) {}
                     }
                     out += populate(loop.body(), values);
                 }
@@ -90,6 +97,7 @@ public class TemplateInterpreter {
         }
     }
 
+    //TODO this should probably be tested more
     /**
      * Tries to resolve and get the Value at the given variable path.
      * Throws an Exception if the path does not exist.
@@ -99,33 +107,47 @@ public class TemplateInterpreter {
      * @return value of the variable
      * @apiNote Does not support getters or any functions
      */
-    public static Object getNestedReplacement(VarStatement varExpr, HashMap<String, Object> values) throws VariableValueNullException, NoSuchFieldException, IllegalAccessException {
+    public static Object getNestedReplacement(VarStatement varExpr, HashMap<String, Object> values) throws InterpretationException  {
         String[] variableNames = varExpr.accessExpr().split("\\.");
         if (variableNames.length == 0) {
-            throw new TemplateSyntaxException("\""+varExpr.accessExpr()+"\" is not a valid field access expression");
+            //TODO kinda a panic, we should never be here
+            throw new InterpretationException("");
         }
         if (!values.containsKey(variableNames[0])) {
             throw new FieldDoesNotExistException(variableNames[0], values.keySet());
         }
         Object variable = values.get(variableNames[0]);
+        if (variable == null) {
+            throw new VariableValueNullException(variableNames[0]);
+        }
         for (int i = 1; i < variableNames.length; i++) {
-            if (variable == null) {
-                throw new VariableValueNullException(variableNames[i - 1]);
-            }
             try {
                 //TODO check if variable name is null
-                //TODO wrap getDeclaredField errors
-                //TODO wrap setAccessible errors
                 Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
                 declaredField.setAccessible(true);
                 variable = declaredField.get(variable);
             } catch (NoSuchFieldException _) {
                 throw new FieldDoesNotExistException(variableNames[i], variable.getClass());
+            } catch (IllegalAccessException | InaccessibleObjectException | SecurityException e) {
+                throw new FieldNotAccessibleException(variableNames[i], variable.getClass(), e);
             }
-        }
-        if (variable == null) {
-            System.out.println("input: " + varExpr.accessExpr());
-            //TODO
+            catch (IllegalArgumentException _) {
+                //TODO kinda panic, because we should never be here, this means we have mixed up the underlying type of
+                // declaredField, because of type erasure in getDeclaredField(...)
+                throw new InterpretationException("");
+            }
+            catch (ExceptionInInitializerError e) {
+                //TODO kinda panic, because this indicates something very weird that should not happen.
+                // not sure what this is, but sounds above my pay grade
+                throw new InterpretationException("", e);
+            }
+            catch (NullPointerException _) {
+                //TODO kinda panic, the name should never be null, not allowed by parsing
+                throw new InterpretationException("");
+            }
+            if (variable == null) {
+                throw new VariableValueNullException(variableNames[i]);
+            }
         }
         return variable;
     }
