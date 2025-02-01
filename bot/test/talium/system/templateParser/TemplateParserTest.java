@@ -106,7 +106,7 @@ public class TemplateParserTest {
     private void test(String src, int iteration) {
         try {
             var statements = new TemplateParser(src).parse();
-            TemplateInterpreter.populate(statements, null);
+            var res = TemplateInterpreter.populate(statements, null);
             if (src.contains("$") || src.contains("%")) {
                 System.out.println("i: " + iteration + " -> Statement Stream:");
                 System.out.println(statements);

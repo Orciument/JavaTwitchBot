@@ -30,12 +30,12 @@ public class TemplateLexerTest {
     }
 
     @Test
-    void missing_closing_bracket_directive() throws UnexpectedTokenException, UnsupportedDirective {
+    void missing_closing_bracket_directive() throws UnsupportedDirective, UnexpectedEndOfInputException {
         TemplateLexer lex = new TemplateLexer("Hello, %{ if var.name != \"\" }${var.name}%{ else }unnamed%{ endif ");
         try {
             lex.parse();
             fail("Should have thrown an TemplateSyntaxException");
-        } catch (UnexpectedEndOfInputException _) { }
+        } catch (UnexpectedTokenException _) { }
     }
 
     @Test

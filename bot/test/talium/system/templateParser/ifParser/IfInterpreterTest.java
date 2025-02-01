@@ -1,9 +1,6 @@
 package talium.system.templateParser.ifParser;
 
-import org.junit.jupiter.api.Disabled;
 import talium.system.templateParser.exeptions.ImpossibleComparisonException;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
 import talium.system.templateParser.statements.Equals;
 import talium.system.templateParser.tokens.Comparison;
 import org.junit.jupiter.api.Nested;
@@ -14,6 +11,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class IfInterpreterTest {
+    //TODO add nulls
 
     @Nested
     class OperatorTests {
@@ -86,8 +84,6 @@ public class IfInterpreterTest {
         }
     }
 
-    //TODO investigate failing tests
-    @Disabled
     @Nested
     class TypeTests {
         @Test
@@ -157,7 +153,7 @@ public class IfInterpreterTest {
         void string_int()  {
             try {
                 IfInterpreter.compare(new Comparison("test", Equals.EQUALS, 1));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
 
@@ -165,7 +161,7 @@ public class IfInterpreterTest {
         void string_double() {
             try {
                 IfInterpreter.compare(new Comparison("test", Equals.EQUALS, 10.52323D));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
 
@@ -173,7 +169,7 @@ public class IfInterpreterTest {
         void string_boolean() {
             try {
                 IfInterpreter.compare(new Comparison("test", Equals.EQUALS, true));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
 
@@ -181,7 +177,7 @@ public class IfInterpreterTest {
         void int_boolean() {
             try {
                 IfInterpreter.compare(new Comparison(123, Equals.EQUALS, true));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
 
@@ -189,7 +185,7 @@ public class IfInterpreterTest {
         void long_float() {
             try {
                 IfInterpreter.compare(new Comparison(10L, Equals.NOT_EQUALS, 10.52323F));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
 
@@ -197,7 +193,7 @@ public class IfInterpreterTest {
         void object_object() {
             try {
                 IfInterpreter.compare(new Comparison(123, Equals.EQUALS, new ArrayList<Exception>()));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
 
@@ -205,7 +201,7 @@ public class IfInterpreterTest {
         void object_boolean() {
             try {
                 IfInterpreter.compare(new Comparison(new ArrayList<Exception>(), Equals.EQUALS, true));
-                fail("UnsupportedOperationException not thrown!");
+                fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
         }
     }

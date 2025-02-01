@@ -105,9 +105,8 @@ public class TemplateInterpreterTest {
             map.put("compLeft", false);
             try {
                 populate(TEMPLATE_IF, map);
-                fail("Should have thrown UnIterableArgumentException");
-            } catch (UnsupportedComparandType _) {
-            }
+                fail("Should have thrown ImpossibleComparisonException");
+            } catch (ImpossibleComparisonException _) {}
         }
     }
 

@@ -2,6 +2,7 @@ package talium.system.templateParser.statements;
 
 import talium.system.templateParser.exeptions.TemplateSyntaxException;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class VarStatement implements Statement {
@@ -24,5 +25,22 @@ public final class VarStatement implements Statement {
 
     public String accessExpr() {
         return accessExpr;
+    }
+
+    @Override
+    public String toString() {
+        return "VarStatement(" + accessExpr + ')';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof VarStatement that)) return false;
+
+        return Objects.equals(accessExpr, that.accessExpr);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(accessExpr);
     }
 }
