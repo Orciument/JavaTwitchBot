@@ -45,19 +45,6 @@ public class CharakterStream implements TokenStream<Character> {
         }
     }
 
-
-    /**
-     * peeks the character after the next one
-     *
-     * @return the character after the next one
-     */
-    public Character future() throws UnexpectedEndOfInputException {
-        if (pos + 1 >= src.length()) {
-            return ' ';
-        }
-        return src.charAt(pos + 1);
-    }
-
     @Override
     public boolean isEOF() {
         return pos == src.length();

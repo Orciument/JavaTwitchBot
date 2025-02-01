@@ -50,6 +50,9 @@ public class TemplateParser {
             return new TextStatement(current.value());
         }
         if (current.kind() == TemplateTokenKind.VAR) {
+            //TODO check for valid java object references
+            // make illegal:
+            // VarStatement[name=;kO'!1NQD;Mdejc/QF>hs=43LCl@!3yB4+*|I%YGH&Z]
             return new VarStatement(current.value());
         }
         if (current.kind() == TemplateTokenKind.IF_HEAD) {
