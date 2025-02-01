@@ -3,10 +3,7 @@ package talium.system.templateParser;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.jupiter.api.Test;
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
-import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
-import talium.system.templateParser.exeptions.UnsupportedDirective;
+import talium.system.templateParser.exeptions.*;
 
 
 import java.util.ArrayList;
@@ -115,8 +112,7 @@ public class TemplateParserTest {
                 System.out.println(statements);
                 fail("Should likely have thrown for: " + src);
             }
-        } catch (TemplateSyntaxException | UnexpectedEndOfInputException | UnsupportedComparisonOperator |
-                 UnsupportedDirective | NoSuchFieldException _) {
+        } catch (StringTemplateException _) {
         } catch (Exception e) {
             System.out.println("i: " + iteration + " -> Source Input: " + src);
             fail("Unexpected Exception thrown: " + e.getMessage(), e);
