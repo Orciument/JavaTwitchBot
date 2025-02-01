@@ -51,10 +51,7 @@ public class TemplateParser {
             return new TextStatement(current.value());
         }
         if (current.kind() == TemplateTokenKind.VAR) {
-            //TODO check for valid java object references
-            // make illegal:
-            // VarStatement[name=;kO'!1NQD;Mdejc/QF>hs=43LCl@!3yB4+*|I%YGH&Z]
-            return new VarStatement(current.value());
+            return VarStatement.create(current.value());
         }
         if (current.kind() == TemplateTokenKind.IF_HEAD) {
             Comparison comparison = IfParser.parse(current.value());
@@ -114,7 +111,7 @@ public class TemplateParser {
                 System.out.println(STR."\{indent}Text(\{textStatement.text()}),");
             }
             if (statement instanceof VarStatement varStatement) {
-                System.out.println(STR."\{indent}Var(\{varStatement.name()}),");
+                System.out.println(STR."\{indent}Var(\{varStatement.accessExpr()}),");
             }
             if (statement instanceof IfStatement ifStatement) {
                 System.out.println(STR."\{indent}IF: \{ifStatement.comparison()}");

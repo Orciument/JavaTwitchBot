@@ -14,7 +14,7 @@ public class IfParserTest {
 
     @Test
     void test_success() throws UnsupportedComparisonOperator {
-        var comp = new Comparison(new VarStatement("var.name"), Equals.NOT_EQUALS, "test");
+        var comp = new Comparison(VarStatement.create("var.name"), Equals.NOT_EQUALS, "test");
         assert parse("var.name != \"test\"").equals(comp);
     }
 
@@ -34,31 +34,31 @@ public class IfParserTest {
 
     @Test
     void test_types() throws UnsupportedComparisonOperator {
-        var bool = new Comparison(new VarStatement("var.name"), Equals.EQUALS, false);
+        var bool = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, false);
         assert parse("var.name == false").equals(bool);
 
-        var string = new Comparison(new VarStatement("var.name"), Equals.EQUALS, "test");
+        var string = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, "test");
         assert parse("var.name == \"test\"").equals(string);
 
-        var character = new Comparison(new VarStatement("var.name"), Equals.EQUALS, "a");
+        var character = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, "a");
         assert parse("var.name == \"a\"").equals(character);
 
-        var byte_ = new Comparison(new VarStatement("var.name"), Equals.EQUALS, 159);
+        var byte_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 159);
         assert parse("var.name == 159").equals(byte_);
 
-        var short_ = new Comparison(new VarStatement("var.name"), Equals.EQUALS, 16000);
+        var short_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 16000);
         assert parse("var.name == 16000").equals(short_);
 
-        var int_ = new Comparison(new VarStatement("var.name"), Equals.EQUALS, 273650);
+        var int_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 273650);
         assert parse("var.name == 273650").equals(int_);
 
-        var long_ = new Comparison(new VarStatement("var.name"), Equals.EQUALS, 1729010172331L);
+        var long_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 1729010172331L);
         assert parse("var.name == 1729010172331").equals(long_);
 
-        var float_ = new Comparison(new VarStatement("var.name"), Equals.EQUALS, 69.4200);
+        var float_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 69.4200);
         assert parse("var.name == 69.4200").equals(float_);
 
-        var double_ = new Comparison(new VarStatement("var.name"), Equals.EQUALS, 3.1415d);
+        var double_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 3.1415d);
         assert parse("var.name == 3.1415").equals(double_);
     }
 }

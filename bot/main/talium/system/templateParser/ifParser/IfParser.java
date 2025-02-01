@@ -107,7 +107,7 @@ public class IfParser {
     private static Object tokenToObject(IfToken token) {
         return switch (token.kind()) {
             case STRING -> token.value();
-            case VAR -> new VarStatement(token.value());
+            case VAR -> VarStatement.create(token.value());
             case INT -> {
                 var initialLong = Long.parseLong(token.value());
                 if (initialLong > Integer.MIN_VALUE && initialLong < Integer.MAX_VALUE) {
