@@ -135,7 +135,6 @@ public class Registrar {
     /// Registers a template with the context variables (captured environment)
     public static void registerTemplate(String templateId, String template, String messageColor) {
         templateService.saveIfAbsent(new Template(templateId, template, messageColor));
-
     }
 
     /// Registers a template with the context variables (captured environment)
