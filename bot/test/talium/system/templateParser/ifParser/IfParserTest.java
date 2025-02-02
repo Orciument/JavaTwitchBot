@@ -62,4 +62,16 @@ public class IfParserTest {
         var double_ = new Comparison(VarStatement.create("var.name"), Equals.EQUALS, 3.1415d);
         assert parse("var.name == 3.1415").equals(double_);
     }
+
+    @Test
+    void malformed_number() throws UnexpectedEndOfInputException, UnsupportedComparisonOperator, TemplateSyntaxException {
+        try {
+            parse("  1\"string%{ <= .SPECIAL TEXTendfor[*]SPECIAL TEXT");
+            fail();
+        } catch (TemplateSyntaxException e) {
+            if (!(e.getCause() instanceof NumberFormatException)) {
+                throw e;
+            }
+        }
+    }
 }
