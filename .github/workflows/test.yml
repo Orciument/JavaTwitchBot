@@ -1,6 +1,6 @@
-name: Build on Push
+name: Test
 
-on: push
+on: pull_request
 
 jobs:
   build:
@@ -19,3 +19,5 @@ jobs:
         working-directory: bot
         env:
           JAVA_TOOL_OPTIONS: --enable-preview
+      - name: Run all Tests
+        run: mvn test
