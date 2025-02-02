@@ -12,4 +12,8 @@ public class TemplateSyntaxException extends ParsingException {
     public TemplateSyntaxException(String message) {
         super(message);
     }
+
+    public TemplateSyntaxException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
