@@ -4,6 +4,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.jupiter.api.Test;
 import talium.system.templateParser.exeptions.*;
+import talium.system.templateParser.statements.TextStatement;
 
 
 import java.util.ArrayList;
@@ -52,9 +53,15 @@ public class TemplateParserTest {
         tokensStrings.add(">");
         tokensStrings.add(">=");
         tokensStrings.add("for");
+        tokensStrings.add("in");
+        tokensStrings.add("[*]");
+        tokensStrings.add("item");
+        tokensStrings.add("itemList");
         tokensStrings.add("endfor");
         tokensStrings.add(".");
         tokensStrings.add("\"");
+        tokensStrings.add("%{ object in objectList }");
+        tokensStrings.add("%{ if variable.test == \"test\" }");
     }
 
     @Test
@@ -120,8 +127,14 @@ public class TemplateParserTest {
     }
 
     @Test
-    void testWeirdFor() {
-        //TODO this procudes a weird null in the statement list
-        test("for\"!=   1}for%{   endif }==<  ", 1);
+    void returnNonNull() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
+        assert !new TemplateLexer("t%{   endif }").parse().contains(null);
+    }
+
+    @Test
+    void unnecessary_tokens_to_text() throws ParsingException {
+        assert new TemplateParser("t%{ endif }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endif }")));
+        assert new TemplateParser("t%{ endfor }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endfor }")));
+        assert new TemplateParser("t%{ else }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ else }")));
     }
 }

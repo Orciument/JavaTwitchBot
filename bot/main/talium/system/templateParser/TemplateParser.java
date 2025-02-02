@@ -1,5 +1,6 @@
 package talium.system.templateParser;
 
+import org.springframework.lang.NonNull;
 import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.ifParser.IfParser;
 import talium.system.templateParser.statements.*;
@@ -37,18 +38,14 @@ public class TemplateParser {
     /**
      * Parses the next statement out of the stream of tokens
      */
+    @NonNull
     public Statement parseToken() throws ParsingException {
         TemplateToken current = src.next();
-        if (current == null) {
-            return null;
-        }
         if (current.kind() == TemplateTokenKind.TEXT) {
             return new TextStatement(current.value());
-        }
-        if (current.kind() == TemplateTokenKind.VAR) {
+        } else if (current.kind() == TemplateTokenKind.VAR) {
             return VarStatement.create(current.value());
-        }
-        if (current.kind() == TemplateTokenKind.IF_HEAD) {
+        } else if (current.kind() == TemplateTokenKind.IF_HEAD) {
             Comparison comparison = IfParser.parse(current.value());
             List<Statement> then = new ArrayList<>();
             List<Statement> other = new ArrayList<>();
@@ -71,8 +68,7 @@ public class TemplateParser {
                 }
             }
             return new IfStatement(comparison, then, other);
-        }
-        if (current.kind() == TemplateTokenKind.FOR_HEAD) {
+        } else if (current.kind() == TemplateTokenKind.FOR_HEAD) {
             String[] head = current.value().split(" in ");
             if (head.length < 2) {
                 throw new TemplateSyntaxException("Missing \"in\" in for definition!");
@@ -90,8 +86,13 @@ public class TemplateParser {
                 body.add(parseToken());
             }
             return new LoopStatement(head[0], head[1], body);
+        } else {
+            //covers:
+            //TemplateTokenKind.FOR_END
+            //TemplateTokenKind.IF_ELSE
+            //TemplateTokenKind.IF_END
+            return new TextStatement(current.value());
         }
-        return null;
     }
 
     /**
