@@ -1,6 +1,6 @@
 package talium.system.templateParser;
 
-
+import org.springframework.lang.NonNull;
 import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
 import talium.system.templateParser.exeptions.UnexpectedTokenException;
 import talium.system.templateParser.exeptions.UnsupportedDirective;
@@ -32,9 +32,6 @@ public class TemplateLexer {
         List<TemplateToken> list = new ArrayList<>();
         while (!src.isEOF()) {
             TemplateToken next = next();
-            if (next == null) {
-                break;
-            }
             list.add(next);
         }
         return list;
@@ -47,6 +44,7 @@ public class TemplateLexer {
         return tokens.get(pos);
     }
 
+    @NonNull
     public TemplateToken next() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         if (pos >= tokens.size()) {
             tokens.add(parseToken());
@@ -77,16 +75,17 @@ public class TemplateLexer {
      *
      * @return the next token
      */
+    @NonNull
     private TemplateToken parseToken() throws UnexpectedTokenException, UnexpectedEndOfInputException, UnsupportedDirective {
         if (src.isEOF()) {
-            return null;
+            throw new UnexpectedEndOfInputException();
         }
         if (src.peek() == '$') {
             src.consume('$');
             src.consume('{');
             String varName = src.readUntil('}');
             src.consume('}');
-            return new TemplateToken(TemplateTokenKind.VAR, varName);
+            return TemplateToken.var(varName);
 
         } else if (src.peek() == '%') {
             // Get type of directive if or for
@@ -99,34 +98,34 @@ public class TemplateLexer {
                 String condition = src.readUntil('}');
                 src.skipWhitespace();
                 src.consume('}');
-                return new TemplateToken(TemplateTokenKind.IF_HEAD, condition);
+                return TemplateToken.if_head(condition);
             } else if (directive.equals("else")) {
                 src.skipWhitespace();
                 src.consume('}');
-                return new TemplateToken(TemplateTokenKind.IF_ELSE, "");
+                return TemplateToken.if_else();
             } else if (directive.equals("endif")) {
                 src.skipWhitespace();
                 src.consume('}');
-                return new TemplateToken(TemplateTokenKind.IF_END, "");
+                return TemplateToken.endif();
             } else if (directive.equals("for")) {
                 String head = src.readUntil('}');
                 src.skipWhitespace();
                 src.consume('}');
-                return new TemplateToken(TemplateTokenKind.FOR_HEAD, head);
+                return TemplateToken.for_head(head);
             } else if (directive.equals("endfor")) {
                 src.skipWhitespace();
                 src.consume('}');
-                return new TemplateToken(TemplateTokenKind.FOR_END, "");
+                return TemplateToken.for_end();
             } else {
                 throw new UnsupportedDirective(STR."Directive not supported: \{directive}");
             }
         } else {
-            String buffer = "";
+            StringBuilder buffer = new StringBuilder();
             // while no var or directive is encountered, all chars are consumed into a TEXT token
             while (!src.isEOF() && src.peek() != '$' && src.peek() != '%') {
-                buffer += src.next();
+                buffer.append(src.next());
             }
-            return new TemplateToken(TemplateTokenKind.TEXT, buffer);
+            return TemplateToken.text(buffer.toString());
         }
     }
 

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class IfInterpreterTest {
-    //TODO add nulls
+    //TODO add checks for nulls
 
     @Nested
     class OperatorTests {

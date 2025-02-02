@@ -4,7 +4,10 @@ import org.junit.jupiter.api.Test;
 import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
 import talium.system.templateParser.exeptions.UnexpectedTokenException;
 import talium.system.templateParser.exeptions.UnsupportedDirective;
+import talium.system.templateParser.tokens.TemplateToken;
 import talium.system.templateParser.tokens.TemplateTokenKind;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -75,5 +78,17 @@ public class TemplateLexerTest {
             new TemplateLexer("template text $c mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
         } catch (UnexpectedTokenException _) { }
+    }
+
+    @Test
+    void returnNonNull() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
+        assert !new TemplateLexer("t%{   endif }").parse().contains(null);
+    }
+
+    @Test
+    void unnecessary_tokens_to_text() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
+        assert new TemplateLexer("t%{ endif }").parse().equals(List.of(TemplateToken.text("t"), TemplateToken.endif()));
+        assert new TemplateLexer("t%{ endfor }").parse().equals(List.of(TemplateToken.text("t"), TemplateToken.for_end()));
+        assert new TemplateLexer("t%{ else }").parse().equals(List.of(TemplateToken.text("t"), TemplateToken.if_else()));
     }
 }
