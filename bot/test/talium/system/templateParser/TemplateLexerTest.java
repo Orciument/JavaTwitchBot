@@ -43,8 +43,15 @@ public class TemplateLexerTest {
 
     @Test
     void missing_percent() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
-        TemplateLexer lex = new TemplateLexer("Hello, %{ if var.name != \"\" }${var.name}%{ else }unnamed{ endif }");
-        System.out.println(lex.parse());
+        var tokens = new TemplateLexer("Hello, %{ if var.name != \"\" }${var.name}%{ else }unnamed{ endif }").parse();
+        assert tokens.size() == 5;
+        assert tokens.get(0).kind() == TemplateTokenKind.TEXT;
+        assert tokens.get(0).value().equals("Hello, ");
+        assert tokens.get(1).kind() == TemplateTokenKind.IF_HEAD;
+        assert tokens.get(2).kind() == TemplateTokenKind.VAR;
+        assert tokens.get(3).kind() == TemplateTokenKind.IF_ELSE;
+        assert tokens.get(4).kind() == TemplateTokenKind.TEXT;
+        assert tokens.get(4).value().equals("unnamed{ endif }");
     }
 
     @Test
