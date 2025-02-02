@@ -26,36 +26,32 @@ public class TemplateInterpreter {
         if (values == null) {
             values = new HashMap<>();
         }
-        String out = "";
+        StringBuilder out = new StringBuilder();
         for (Statement statement : template) {
-            if (statement instanceof TextStatement textStatement) {
-                out += textStatement.text();
+            if (statement instanceof TextStatement(String text)) {
+                out.append(text);
             } else if (statement instanceof VarStatement varStatement) {
                 Object nestedReplacement = getNestedReplacement(varStatement, values);
-                if (nestedReplacement == null) {
-                    out += "null";
-                } else {
-                    out += nestedReplacement.toString();
-                }
-            } else if (statement instanceof IfStatement ifStatement) {
+                out.append(nestedReplacement);
+            } else if (statement instanceof IfStatement(Comparison comparison, List<Statement> then, List<Statement> other)) {
                 // replace Vars with actual values
-                Object left = ifStatement.comparison().left();
+                Object left = comparison.left();
                 if (left instanceof VarStatement leftVar) {
                     left = castToValidInput(getNestedReplacement(leftVar, values));
                 }
-                Object right = ifStatement.comparison().right();
+                Object right = comparison.right();
                 if (right instanceof VarStatement rightVar) {
                     right = castToValidInput(getNestedReplacement(rightVar, values));
                 }
 
-                boolean condition = IfInterpreter.compare(new Comparison(left, ifStatement.comparison().equals(), right));
+                boolean condition = IfInterpreter.compare(new Comparison(left, comparison.equals(), right));
                 if (condition) {
-                    out += populate(ifStatement.then(), values);
+                    out.append(populate(then, values));
                 } else {
-                    out += populate(ifStatement.other(), values);
+                    out.append(populate(other, values));
                 }
-            } else if (statement instanceof LoopStatement loop) {
-                String[] varParts = loop.var().split("\\[*]");
+            } else if (statement instanceof LoopStatement(String name, String var, List<Statement> body)) {
+                String[] varParts = var.split("\\[*]");
                 //TODO here is probably also an error
                 // this varstatement should be created in parsing
                 Object nestedReplacement = null;
@@ -69,18 +65,18 @@ public class TemplateInterpreter {
 
                 //noinspection unchecked
                 for (Object item : (Iterable<Object>) nestedReplacement) {
-                    values.put(loop.name(), item);
+                    values.put(name, item);
                     if (varParts.length > 1) {
                         try {
-                        values.put(loop.name(), getNestedReplacement(VarStatement.create(varParts[1]), values));
+                        values.put(name, getNestedReplacement(VarStatement.create(varParts[1]), values));
                         } catch (TemplateSyntaxException _) {}
                     }
-                    out += populate(loop.body(), values);
+                    out.append(populate(body, values));
                 }
-                values.remove(loop.name());
+                values.remove(name);
             }
         }
-        return out;
+        return out.toString();
     }
 
     /**
