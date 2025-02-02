@@ -37,8 +37,8 @@ public class Registrar {
     }
 
     /// Register Custom HealthUI titel and description
-    public static void registerHealthDescription(Class self, String title, String description) {
-        HealthManager.addCustomization(self.getSimpleName(), title, description);
+    public static void registerHealthDescription(Class<?> self, String title, String description) {
+        HealthManager.addCustomization(self.getCanonicalName(), title, description);
     }
 
     public interface ResetableCache {
