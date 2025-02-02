@@ -23,6 +23,7 @@ public class IfInterpreter {
      * <br>
      * <br>
      * All ints and floats are cast into longs and floats respectively.
+     *
      * @param comp prepared comparison
      * @return boolean result
      */
@@ -30,9 +31,18 @@ public class IfInterpreter {
         Object l = comp.left();
         Object r = comp.right();
         if (l == null && r == null) {
-            return true;
+            //both are null
+            return switch (comp.equals()) {
+                case EQUALS, LESS_THAN_OR_EQUALS, GREATER_THAN_OR_EQUALS -> true;
+                case NOT_EQUALS, LESS_THAN, GREATER_THAN -> false;
+            };
         } else if (l == null || r == null) {
-            return false;
+            //one is null
+            return switch (comp.equals()) {
+                case EQUALS -> false;
+                case NOT_EQUALS -> true;
+                default -> throw new ImpossibleComparisonException(l, r, comp.equals());
+            };
         } else if ((l instanceof String || l instanceof Character) && (r instanceof String || r instanceof Character)) {
             String left = l.toString();
             String right = r.toString();

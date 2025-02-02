@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class IfInterpreterTest {
-    //TODO add checks for nulls
 
     @Nested
     class OperatorTests {
@@ -203,6 +202,40 @@ public class IfInterpreterTest {
                 IfInterpreter.compare(new Comparison(new ArrayList<Exception>(), Equals.EQUALS, true));
                 fail("ImpossibleComparisonException not thrown!");
             } catch (ImpossibleComparisonException _) {}
+        }
+    }
+
+    @Nested
+    class Nulls {
+        @Test
+        void null_null() throws ImpossibleComparisonException {
+            assert IfInterpreter.compare(new Comparison(null, Equals.EQUALS, null));
+            assert !IfInterpreter.compare(new Comparison(null, Equals.NOT_EQUALS, null));
+        }
+        @Test
+        void null_int() throws ImpossibleComparisonException {
+            assert !IfInterpreter.compare(new Comparison(null, Equals.EQUALS, 102021));
+            assert IfInterpreter.compare(new Comparison(9349834, Equals.NOT_EQUALS, null));
+        }
+        @Test
+        void null_double() throws ImpossibleComparisonException {
+            assert !IfInterpreter.compare(new Comparison(null, Equals.EQUALS, 29.12939349232));
+            assert IfInterpreter.compare(new Comparison(9289498293.39323, Equals.NOT_EQUALS, null));
+        }
+        @Test
+        void null_string() throws ImpossibleComparisonException {
+            assert !IfInterpreter.compare(new Comparison(null, Equals.EQUALS, 102021));
+            assert IfInterpreter.compare(new Comparison(9349834, Equals.NOT_EQUALS, null));
+        }
+        @Test
+        void null_boolean() throws ImpossibleComparisonException {
+            assert !IfInterpreter.compare(new Comparison(null, Equals.EQUALS, false));
+            assert IfInterpreter.compare(new Comparison(true, Equals.NOT_EQUALS, null));
+        }
+        @Test
+        void null_Object() throws ImpossibleComparisonException {
+            assert !IfInterpreter.compare(new Comparison(null, Equals.EQUALS, new Object()));
+            assert IfInterpreter.compare(new Comparison(new ArrayList<Exception>(), Equals.NOT_EQUALS, null));
         }
     }
 }
