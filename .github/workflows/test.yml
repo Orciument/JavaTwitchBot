@@ -21,3 +21,6 @@ jobs:
           JAVA_TOOL_OPTIONS: --enable-preview
       - name: Run all Tests
         run: mvn test
+        working-directory: bot
+        env:
+          JAVA_TOOL_OPTIONS: --enable-preview
