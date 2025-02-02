@@ -35,7 +35,7 @@ public class TemplateInterpreterTest {
             );
             TEMPLATE_LOOP = List.of(
                     new TextStatement("Hello,"),
-                    new LoopStatement("varName", "loopVar", Arrays.asList(
+                    new LoopStatement("varName", VarStatement.create("loopVar"), Arrays.asList(
                             new TextStatement(" "),
                             VarStatement.create("varName")
                     )),
@@ -43,8 +43,8 @@ public class TemplateInterpreterTest {
             );
             NESTED_LOOP = Arrays.asList(
                     new TextStatement("Hello,"),
-                    new LoopStatement("innerLoop", "loopVar", Arrays.asList(
-                            new LoopStatement("varName", "innerLoop", Arrays.asList(
+                    new LoopStatement("innerLoop", VarStatement.create("loopVar"), Arrays.asList(
+                            new LoopStatement("varName", VarStatement.create("innerLoop"), Arrays.asList(
                                     new TextStatement(" "),
                                     VarStatement.create("varName")
                             )),

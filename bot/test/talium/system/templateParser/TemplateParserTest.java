@@ -8,12 +8,15 @@ import talium.system.templateParser.statements.TextStatement;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class TemplateParserTest {
     private static final List<String> tokensStrings = new ArrayList<>();
+    private static final Map<String, Object> environment = new HashMap<>();
 
     static {
         tokensStrings.add(" ");
@@ -62,6 +65,14 @@ public class TemplateParserTest {
         tokensStrings.add("\"");
         tokensStrings.add("%{ object in objectList }");
         tokensStrings.add("%{ if variable.test == \"test\" }");
+
+        environment.put("test", "test");
+        environment.put("object", new Object());
+        environment.put("list", List.of("1", "2", "3"));
+        environment.put("b", true);
+        environment.put("f", 90293.129);
+        environment.put("n", 2828);
+        environment.put("nu", null);
     }
 
     @Test
@@ -113,12 +124,10 @@ public class TemplateParserTest {
     private void test(String src, int iteration) {
         try {
             var statements = new TemplateParser(src).parse();
-            var res = TemplateInterpreter.populate(statements, null);
-            if (src.contains("$") || src.contains("%")) {
-                System.out.println("i: " + iteration + " -> Statement Stream:");
-                System.out.println(statements);
-                fail("Should likely have thrown for: " + src);
+            if (statements.contains(null)) {
+                fail("Statementlist contains null statement");
             }
+            TemplateInterpreter.populate(statements, environment);
         } catch (StringTemplateException _) {
         } catch (Exception e) {
             System.out.println("i: " + iteration + " -> Source Input: " + src);
@@ -137,4 +146,8 @@ public class TemplateParserTest {
         assert new TemplateParser("t%{ endfor }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endfor }")));
         assert new TemplateParser("t%{ else }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ else }")));
     }
+
+    //TODO add end-to-end tests, input string and environment, test result string
+
+    //TODO probably not this file, but test loop directive
 }

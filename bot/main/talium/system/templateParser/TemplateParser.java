@@ -73,9 +73,6 @@ public class TemplateParser {
             if (head.length < 2) {
                 throw new TemplateSyntaxException("Missing \"in\" in for definition!");
             }
-            if (StringUtils.countMatches(head[1], "[*]") > 1) {
-                throw new TemplateSyntaxException("Only one wildcard allowed in a for statement");
-            }
             List<Statement> body = new ArrayList<>();
             while (!src.isEOF()) { // mostly equivalent to while(true), but with a overrun check
                 var curr = src.peek();
@@ -85,7 +82,8 @@ public class TemplateParser {
                 }
                 body.add(parseToken());
             }
-            return new LoopStatement(head[0], head[1], body);
+            VarStatement listVar = VarStatement.create(head[1].trim());
+            return new LoopStatement(head[0].trim(), listVar, body);
         } else {
             //covers:
             //TemplateTokenKind.FOR_END
@@ -117,7 +115,7 @@ public class TemplateParser {
                 System.out.println(STR."\{indent}},");
             }
             if (statement instanceof LoopStatement forStatement) {
-                System.out.println(STR."\{indent}FOR: \{forStatement.name()} in \{forStatement.var()} {");
+                System.out.println(STR."\{indent}FOR: \{forStatement.varName()} in \{forStatement.var()} {");
                 debugPrint(forStatement.body(), depth + 1);
                 System.out.println(STR."\{indent}},");
             }

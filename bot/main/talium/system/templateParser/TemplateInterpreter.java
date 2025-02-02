@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InaccessibleObjectException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Populates variables and interprets parsed String templates
@@ -19,61 +20,48 @@ public class TemplateInterpreter {
      * Populates variables and interprets parsed String templates
      *
      * @param template parsed template as list of statements
-     * @param values a map with all top level variables and their names
+     * @param environment a map with all top level variables and their names
      * @return the resulting string
      */
-    public static String populate(List<Statement> template, HashMap<String, Object> values) throws InterpretationException  {
-        if (values == null) {
-            values = new HashMap<>();
+    public static String populate(List<Statement> template, Map<String, Object> environment) throws InterpretationException  {
+        if (environment == null) {
+            environment = new HashMap<>();
         }
         StringBuilder out = new StringBuilder();
         for (Statement statement : template) {
             if (statement instanceof TextStatement(String text)) {
                 out.append(text);
             } else if (statement instanceof VarStatement varStatement) {
-                Object nestedReplacement = getNestedReplacement(varStatement, values);
+                Object nestedReplacement = getNestedReplacement(varStatement, environment);
                 out.append(nestedReplacement);
             } else if (statement instanceof IfStatement(Comparison comparison, List<Statement> then, List<Statement> other)) {
                 // replace Vars with actual values
                 Object left = comparison.left();
                 if (left instanceof VarStatement leftVar) {
-                    left = castToValidInput(getNestedReplacement(leftVar, values));
+                    left = castToValidInput(getNestedReplacement(leftVar, environment));
                 }
                 Object right = comparison.right();
                 if (right instanceof VarStatement rightVar) {
-                    right = castToValidInput(getNestedReplacement(rightVar, values));
+                    right = castToValidInput(getNestedReplacement(rightVar, environment));
                 }
 
-                boolean condition = IfInterpreter.compare(new Comparison(left, comparison.equals(), right));
-                if (condition) {
-                    out.append(populate(then, values));
+                if (IfInterpreter.compare(new Comparison(left, comparison.equals(), right))) {
+                    out.append(populate(then, environment));
                 } else {
-                    out.append(populate(other, values));
+                    out.append(populate(other, environment));
                 }
-            } else if (statement instanceof LoopStatement(String name, String var, List<Statement> body)) {
-                String[] varParts = var.split("\\[*]");
-                //TODO here is probably also an error
-                // this varstatement should be created in parsing
-                Object nestedReplacement = null;
-                try {
-                    nestedReplacement = getNestedReplacement(VarStatement.create(varParts[0]), values);
-                } catch (TemplateSyntaxException _) {}
+            } else if (statement instanceof LoopStatement(String varName, VarStatement var, List<Statement> body)) {
+                Object list = getNestedReplacement(var, environment);
 
-                if (!(nestedReplacement instanceof Iterable<?>)) {
-                    throw new UnIterableArgumentException(varParts[0]);
+                if (!(list instanceof Iterable<?>)) {
+                    throw new UnIterableArgumentException(var.accessExpr());
                 }
 
-                //noinspection unchecked
-                for (Object item : (Iterable<Object>) nestedReplacement) {
-                    values.put(name, item);
-                    if (varParts.length > 1) {
-                        try {
-                        values.put(name, getNestedReplacement(VarStatement.create(varParts[1]), values));
-                        } catch (TemplateSyntaxException _) {}
-                    }
-                    out.append(populate(body, values));
+                for (Object item : (Iterable<?>) list) {
+                    environment.put(varName, item);
+                    out.append(populate(body, environment));
                 }
-                values.remove(name);
+                environment.remove(varName);
             }
         }
         return out.toString();
@@ -100,24 +88,27 @@ public class TemplateInterpreter {
 
     //TODO this should probably be tested more
     /**
-     * Tries to resolve and get the Value at the given variable path.
-     * Throws an Exception if the path does not exist.
+     * Tries to resolve and get the Value at the given field access expression from the environment map.
      *
      * @param varExpr dot . delimited path of variable names
-     * @param values  List of top level variables
+     * @param environment List of top level variables
      * @return value of the variable, this can be null, if the last field is returning the null value
-     * @apiNote Does not support getters or any functions
+     * @apiNote Does not support getters or executing any functions
+     * @throws FieldDoesNotExistException if the variable to be accessed does not exist on the object, or in the environment
+     * @throws VariableValueNullException if the value of a variable is null, but a field on this variable is supposed to be accessed
+     * @throws FieldNotAccessibleException if the value of the field can not be retrieved because of java visibility checks (e.g. private
+     * @throws InterpretationException is thrown when a state is reached that should not be possible. This indicates an actual bug, instead of an error with the template string.
      */
-    public static Object getNestedReplacement(VarStatement varExpr, HashMap<String, Object> values) throws InterpretationException  {
+    public static Object getNestedReplacement(VarStatement varExpr, Map<String, Object> environment) throws InterpretationException  {
         String[] variableNames = varExpr.accessExpr().split("\\.");
         if (variableNames.length == 0) {
             //TODO kinda a panic, we should never be here
             throw new InterpretationException("");
         }
-        if (!values.containsKey(variableNames[0])) {
-            throw new FieldDoesNotExistException(variableNames[0], values.keySet());
+        if (!environment.containsKey(variableNames[0])) {
+            throw new FieldDoesNotExistException(variableNames[0], environment.keySet());
         }
-        Object variable = values.get(variableNames[0]);
+        Object variable = environment.get(variableNames[0]);
         for (int i = 1; i < variableNames.length; i++) {
             if (variable == null) {
                 throw new VariableValueNullException(variableNames[i - 1]);
