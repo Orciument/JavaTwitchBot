@@ -1,23 +1,9 @@
 package talium.system.templateParser.exeptions;
 
+import talium.system.templateParser.statements.Equals;
+
 public class ImpossibleComparisonException extends InterpretationException {
-    public ImpossibleComparisonException(String message) {
-        super(message);
+    public ImpossibleComparisonException(Object comparandA, Object comparandB, Equals operator) {
+        super("Impossible comparing " + (comparandA == null ? "null" : comparandA.getClass().getCanonicalName()) + " and " + (comparandB == null ? "null" : comparandB.getClass().getCanonicalName()) + " via operator " + operator);
     }
-
-    public ImpossibleComparisonException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ImpossibleComparisonException(Throwable cause) {
-        super(cause);
-    }
-
-    public ImpossibleComparisonException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public ImpossibleComparisonException() {
-    }
-
 }

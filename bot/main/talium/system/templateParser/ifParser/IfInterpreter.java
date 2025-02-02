@@ -40,14 +40,14 @@ public class IfInterpreter {
                 case EQUALS -> left.equals(right);
                 case NOT_EQUALS -> !left.equals(right);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
-                        throw new ImpossibleComparisonException(STR."\{comp.equals().name()} is not a supported comparison operation between Strings/Charactern");
+                        throw new ImpossibleComparisonException(l, r, comp.equals());
             };
         } else if (l instanceof Boolean && r instanceof Boolean) {
             return switch (comp.equals()) {
                 case EQUALS -> l.equals(r);
                 case NOT_EQUALS -> !l.equals(r);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
-                        throw new ImpossibleComparisonException(STR."\{comp.equals().name()} is not a supported comparison operation between booleans");
+                        throw new ImpossibleComparisonException(l, r, comp.equals());
             };
         } else if ((l instanceof Double || l instanceof Float) && (r instanceof Double || r instanceof Float)) {
             Double ld = ((Number) l).doubleValue();
@@ -58,7 +58,7 @@ public class IfInterpreter {
             Long rl = ((Number) r).longValue();
             return compareLongs(ll, comp.equals(), rl);
         } else {
-            throw new ImpossibleComparisonException(STR."Types \{l.getClass()} and \{r.getClass()} are not comparable to each other");
+            throw new ImpossibleComparisonException(l, r, comp.equals());
         }
     }
 

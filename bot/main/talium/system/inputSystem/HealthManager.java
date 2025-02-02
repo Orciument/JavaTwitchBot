@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class HealthManager {
@@ -52,8 +51,8 @@ public class HealthManager {
         callback = null;
     }
 
-    public static void reportStatus(Class self, InputStatus status) {
-        reportStatus(self.getSimpleName(), status);
+    public static void reportStatus(Class<?> self, InputStatus status) {
+        reportStatus(self.getCanonicalName(), status);
     }
 
     public static void reportStatus(String self, InputStatus status) {
@@ -104,8 +103,8 @@ public class HealthManager {
         return STATUS_DESCRIPTIONS.stream().map(status -> new StringStatus(status.title, status.status)).toList();
     }
 
-    public static InputStatus get(Class identifier) {
-        return get(identifier.getSimpleName());
+    public static InputStatus get(Class<?> identifier) {
+        return get(identifier.getCanonicalName());
     }
 
     public static InputStatus get(String identifier) {

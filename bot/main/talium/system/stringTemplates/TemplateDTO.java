@@ -21,7 +21,7 @@ public record TemplateDTO(
         this(template.id, template.template, template.messageColor, "");
     }
 
-    private static String buildJsonSchema(HashMap<String, Class> vars) {
+    private static String buildJsonSchema(HashMap<String, Class<?>> vars) {
         StringBuilder varJsonSchema = new StringBuilder("{");
         for (var var : vars.entrySet()) {
             varJsonSchema.append(STR."\"\{var.getKey()}\":\{generateSchema(var.getValue())}, ");
@@ -44,7 +44,7 @@ public record TemplateDTO(
                 || clazz == Double.class
                 || clazz == Boolean.class
         ) {
-            return STR."\"\{clazz.getSimpleName()}\"";
+            return STR."\"\{clazz.getCanonicalName()}\"";
         }
 
         if (clazz.isArray()) {
