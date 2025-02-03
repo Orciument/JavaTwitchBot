@@ -76,14 +76,14 @@ public class TemplateParserTest {
 
     @Test
     void returnNonNull() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
-        assert !new TemplateLexer("t%{   endif }").parse().contains(null);
+        assertFalse(new TemplateLexer("t%{   endif }").parse().contains(null));
     }
 
     @Test
     void unnecessary_tokens_to_text() throws ParsingException {
-        assert new TemplateParser("t%{ endif }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endif }")));
-        assert new TemplateParser("t%{ endfor }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endfor }")));
-        assert new TemplateParser("t%{ else }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ else }")));
+        assertEquals(List.of(new TextStatement("t"), new TextStatement("%{ endif }")), new TemplateParser("t%{ endif }").parse());
+        assertEquals(List.of(new TextStatement("t"), new TextStatement("%{ endfor }")), new TemplateParser("t%{ endfor }").parse());
+        assertEquals(List.of(new TextStatement("t"), new TextStatement("%{ else }")), new TemplateParser("t%{ else }").parse());
     }
 
     @Test
