@@ -4,11 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import talium.system.twitchCommands.persistence.MessagePattern;
 import talium.system.twitchCommands.persistence.TriggerEntity;
-import talium.system.twitchCommands.cooldown.ChatCooldown;
 import talium.system.twitchCommands.persistence.TriggerService;
-import talium.inputs.Twitch4J.ChatMessage;
-import talium.system.twitchCommands.cooldown.CooldownType;
-import talium.inputs.Twitch4J.TwitchUserPermission;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,22 +72,6 @@ public class TriggerProvider {
         dbCodeTriggers.keySet().forEach(key -> triggerService.removeTrigger(key));
 
         return resultMap.values().stream().toList();
-    }
-
-    /**
-     * Replaces a trigger with the same triggerId of the new trigger, with the new trigger instance.
-     * Used for updates to triggers to edits in the ui
-     * @param newTrigger replacement trigger
-     * @param callback replacement callback
-     */
-    public static void updateTrigger(TriggerEntity newTrigger, TriggerCallback callback) {
-        for (RuntimeTrigger trigger : triggers) {
-            if (trigger.id().equals(newTrigger.id)) {
-                triggers.remove(trigger);
-                triggers.add(transformTrigger(newTrigger, callback));
-                return;
-            }
-        }
     }
 
     /**

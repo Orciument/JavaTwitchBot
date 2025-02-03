@@ -36,14 +36,6 @@ public class DonationEvent {
         this.donated_at = donated_at;
     }
 
-    @Autowired
-    public void setDonationRepo(DonationRepo donationRepo) {
-        repo = donationRepo;
-    }
-    public static DonationRepo repo;
-
-
-
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();

@@ -10,12 +10,6 @@ public record TemplateDTO(
         String messageColor,
         String varJsonSchema
 ) {
-    public TemplateDTO(String id, String template, String messageColor, String varJsonSchema) {
-        this.id = id;
-        this.template = template;
-        this.messageColor = messageColor;
-        this.varJsonSchema = varJsonSchema;
-    }
 
     public TemplateDTO(Template template) {
         this(template.id, template.template, template.messageColor, "");
@@ -32,7 +26,7 @@ public record TemplateDTO(
         return varJsonSchema.toString();
     }
 
-    private static String generateSchema(Class clazz) {
+    private static String generateSchema(Class<?> clazz) {
         if (clazz.isPrimitive()
                 || clazz == String.class
                 || clazz == Character.class

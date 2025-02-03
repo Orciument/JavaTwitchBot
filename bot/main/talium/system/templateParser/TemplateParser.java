@@ -7,7 +7,6 @@ import talium.system.templateParser.statements.*;
 import talium.system.templateParser.tokens.Comparison;
 import talium.system.templateParser.tokens.TemplateTokenKind;
 import talium.system.templateParser.tokens.TemplateToken;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,35 +89,6 @@ public class TemplateParser {
             //TemplateTokenKind.IF_ELSE
             //TemplateTokenKind.IF_END
             return new TextStatement(current.value());
-        }
-    }
-
-    /**
-     * Prints the list and content of statements to the screen
-     * @param statements statements to print out
-     * @param depth indentation depth for content of statement (may be recursively applied)
-     */
-    public static void debugPrint(List<Statement> statements, int depth) {
-        String indent = " ".repeat(depth);
-        for (var statement : statements) {
-            if (statement instanceof TextStatement textStatement) {
-                System.out.println(STR."\{indent}Text(\{textStatement.text()}),");
-            }
-            if (statement instanceof VarStatement varStatement) {
-                System.out.println(STR."\{indent}Var(\{varStatement.accessExpr()}),");
-            }
-            if (statement instanceof IfStatement ifStatement) {
-                System.out.println(STR."\{indent}IF: \{ifStatement.comparison()}");
-                debugPrint(ifStatement.then(), depth + 1);
-                System.out.println(STR."\{indent}} else {");
-                debugPrint(ifStatement.other(), depth + 1);
-                System.out.println(STR."\{indent}},");
-            }
-            if (statement instanceof LoopStatement forStatement) {
-                System.out.println(STR."\{indent}FOR: \{forStatement.varName()} in \{forStatement.var()} {");
-                debugPrint(forStatement.body(), depth + 1);
-                System.out.println(STR."\{indent}},");
-            }
         }
     }
 }

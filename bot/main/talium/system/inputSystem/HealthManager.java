@@ -33,23 +33,6 @@ public class HealthManager {
     private static final ArrayList<StatusDescription> STATUS_DESCRIPTIONS = new ArrayList<>();
     private static final HashMap<String, Customization> reporterCustomisation = new HashMap<>();
     private static volatile InputStatus inputStatus = InputStatus.STOPPED;
-    private static volatile Consumer<InputStatus> callback;
-    private static volatile InputStatus filter;
-
-    public static void subscribeNextChange(Consumer<InputStatus> callback, InputStatus filterBy) {
-        HealthManager.callback = callback;
-        filter = filterBy;
-    }
-
-    private static void checkCallback() {
-        if (filter != inputStatus) {
-            return;
-        }
-        if (callback != null) {
-            callback.accept(inputStatus);
-        }
-        callback = null;
-    }
 
     public static void reportStatus(Class<?> self, InputStatus status) {
         reportStatus(self.getCanonicalName(), status);
@@ -67,7 +50,6 @@ public class HealthManager {
             statusOptional.get().status = status;
         }
         checkOverallStatusChange();
-        checkCallback();
     }
 
     public static void addCustomization(String self, String title, String description) {
