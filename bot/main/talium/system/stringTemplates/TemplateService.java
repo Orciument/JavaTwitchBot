@@ -2,9 +2,7 @@ package talium.system.stringTemplates;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import talium.system.twitchCommands.persistence.TriggerEntity;
 import talium.system.twitchCommands.persistence.TriggerRepo;
-import talium.system.twitchCommands.persistence.TriggerService;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,17 +25,6 @@ public class TemplateService {
 
     public void delete(String id) {
         repo.deleteById(id);
-    }
-
-    public void updateTemplateStringById(String id, String template) {
-        var t = repo.findById(id);
-        if (t.isPresent()) {
-            t.get().template = template;
-            repo.save(t.get());
-        } else {
-            // TODO make error nicer, new type or smt
-            throw new RuntimeException("templates does not exist");
-        }
     }
 
     public Optional<Template> getTemplateById(String id) {

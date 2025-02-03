@@ -4,7 +4,7 @@ import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
 import talium.system.templateParser.exeptions.UnexpectedTokenException;
 
 /**
- * A indexed Stream of characters for parsing.
+ * An indexed Stream of characters for parsing.
  */
 public class CharakterStream {
     String src;
@@ -55,7 +55,7 @@ public class CharakterStream {
      */
     public String readUntil(char c) throws UnexpectedEndOfInputException {
         skipWhitespace();
-        String buffer = "";
+        StringBuilder buffer = new StringBuilder();
         boolean escapeNext = false;
         while (!isEOF() && peek() != c || escapeNext) {
             if (peek() == '\\') { //TODO this impossible, we need to save separately if the last char was a -> \ (or check in the buffer) (also, if \ is the target char, we should exit)
@@ -64,24 +64,9 @@ public class CharakterStream {
             if (escapeNext) {
                 escapeNext = false;
             }
-            buffer += next();
+            buffer.append(next());
         }
-        return buffer;
-    }
-
-    /**
-     * consume all characters up to and excluding the first character that is not a digit
-     *
-     * @return return all consumed characters up to the non digit char
-     * @see Character#isDigit(char)
-     */
-    public String readTillNotDigit() throws UnexpectedEndOfInputException {
-        skipWhitespace();
-        String buffer = "";
-        while (!Character.isDigit(peek())) {
-            buffer += next();
-        }
-        return buffer;
+        return buffer.toString();
     }
 
     /**
@@ -92,11 +77,11 @@ public class CharakterStream {
      */
     public String readTillWhitespace() throws UnexpectedEndOfInputException {
         skipWhitespace();
-        String buffer = "";
+        StringBuilder buffer = new StringBuilder();
         while (!isEOF() && !Character.isWhitespace(peek())) {
-            buffer += next();
+            buffer.append(next());
         }
-        return buffer;
+        return buffer.toString();
     }
 
     /**
