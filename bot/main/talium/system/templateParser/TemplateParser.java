@@ -29,7 +29,7 @@ public class TemplateParser {
     public List<Statement> parse() throws ParsingException {
         List<Statement> statements = new ArrayList<>();
         while (!src.isEOF()) {
-            statements.add(parseToken());
+            statements.add(parseToken(src.next()));
         }
         return statements;
     }
@@ -38,8 +38,7 @@ public class TemplateParser {
      * Parses the next statement out of the stream of tokens
      */
     @NonNull
-    public Statement parseToken() throws ParsingException {
-        TemplateToken current = src.next();
+    public Statement parseToken(TemplateToken current) throws ParsingException {
         if (current.kind() == TemplateTokenKind.TEXT) {
             return new TextStatement(current.value());
         } else if (current.kind() == TemplateTokenKind.VAR) {
@@ -50,20 +49,22 @@ public class TemplateParser {
             List<Statement> other = new ArrayList<>();
             boolean isElse = false;
             while (!src.isEOF()) { // mostly equivalent to while(true), but with a overrun check
-                var curr = src.peek();
+                // we need to check the next token, instead of the next statement, because we only want to parse
+                // the next statement if we have reached the end of the for statement.
+                // But when we get the next token to check, we have already consumed that token, so we need to give it to
+                // parseToken(...) if we need to parse it, because it wasn't the end
+                var curr = src.next();
                 if (curr.kind() == TemplateTokenKind.IF_ELSE) {
                     isElse = true;
-                    src.consume(TemplateTokenKind.IF_ELSE);
                     continue;
                 }
                 if (curr.kind() == TemplateTokenKind.IF_END) {
-                    src.consume(TemplateTokenKind.IF_END);
                     break;
                 }
                 if (!isElse) {
-                    then.add(parseToken());
+                    then.add(parseToken(curr));
                 } else {
-                    other.add(parseToken());
+                    other.add(parseToken(curr));
                 }
             }
             return new IfStatement(comparison, then, other);
@@ -74,12 +75,15 @@ public class TemplateParser {
             }
             List<Statement> body = new ArrayList<>();
             while (!src.isEOF()) { // mostly equivalent to while(true), but with a overrun check
-                var curr = src.peek();
+                // we need to check the next token, instead of the next statement, because we only want to parse
+                // the next statement if we have reached the end of the for statement.
+                // But when we get the next token to check, we have already consumed that token, so we need to give it to
+                // parseToken(...) if we need to parse it, because it wasn't the end
+                var curr = src.next();
                 if (curr.kind() == TemplateTokenKind.FOR_END) {
-                    src.consume(TemplateTokenKind.FOR_END);
                     break;
                 }
-                body.add(parseToken());
+                body.add(parseToken(curr));
             }
             VarStatement listVar = VarStatement.create(head[1].trim());
             return new LoopStatement(head[0].trim(), listVar, body);
