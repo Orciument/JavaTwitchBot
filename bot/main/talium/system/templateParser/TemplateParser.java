@@ -29,7 +29,7 @@ public class TemplateParser {
     public List<Statement> parse() throws ParsingException {
         List<Statement> statements = new ArrayList<>();
         while (!src.isEOF()) {
-            statements.add(parseToken(src.next()));
+            statements.add(parseToken(src.parseToken()));
         }
         return statements;
     }
@@ -53,7 +53,7 @@ public class TemplateParser {
                 // the next statement if we have reached the end of the for statement.
                 // But when we get the next token to check, we have already consumed that token, so we need to give it to
                 // parseToken(...) if we need to parse it, because it wasn't the end
-                var curr = src.next();
+                var curr = src.parseToken();
                 if (curr.kind() == TemplateTokenKind.IF_ELSE) {
                     isElse = true;
                     continue;
@@ -79,7 +79,7 @@ public class TemplateParser {
                 // the next statement if we have reached the end of the for statement.
                 // But when we get the next token to check, we have already consumed that token, so we need to give it to
                 // parseToken(...) if we need to parse it, because it wasn't the end
-                var curr = src.next();
+                var curr = src.parseToken();
                 if (curr.kind() == TemplateTokenKind.FOR_END) {
                     break;
                 }

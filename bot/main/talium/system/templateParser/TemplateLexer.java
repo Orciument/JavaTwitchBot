@@ -14,12 +14,9 @@ import java.util.List;
  */
 public class TemplateLexer {
     CharakterStream src;
-    List<TemplateToken> tokens;
-    int pos;
 
     public TemplateLexer(String src) {
         this.src = new CharakterStream(src);
-        this.tokens = new ArrayList<>();
     }
 
     /**
@@ -30,20 +27,9 @@ public class TemplateLexer {
     public List<TemplateToken> parse() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
         List<TemplateToken> list = new ArrayList<>();
         while (!src.isEOF()) {
-            TemplateToken next = next();
-            list.add(next);
+            list.add(parseToken());
         }
         return list;
-    }
-
-    @NonNull
-    public TemplateToken next() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
-        if (pos >= tokens.size()) {
-            tokens.add(parseToken());
-        }
-        TemplateToken t = tokens.get(pos);
-        pos += 1;
-        return t;
     }
 
     /**
@@ -52,7 +38,7 @@ public class TemplateLexer {
      * @return the next token
      */
     @NonNull
-    private TemplateToken parseToken() throws UnexpectedTokenException, UnexpectedEndOfInputException, UnsupportedDirective {
+    public TemplateToken parseToken() throws UnexpectedTokenException, UnexpectedEndOfInputException, UnsupportedDirective {
         if (src.isEOF()) {
             throw new UnexpectedEndOfInputException();
         }
