@@ -86,7 +86,6 @@ public class TemplateInterpreter {
         }
     }
 
-    //TODO this should probably be tested more
     /**
      * Tries to resolve and get the Value at the given field access expression from the environment map.
      *
@@ -102,8 +101,7 @@ public class TemplateInterpreter {
     public static Object getNestedReplacement(VarStatement varExpr, Map<String, Object> environment) throws InterpretationException  {
         String[] variableNames = varExpr.accessExpr().split("\\.");
         if (variableNames.length == 0) {
-            //TODO kinda a panic, we should never be here
-            throw new InterpretationException("");
+            throw new InterpretationException("PANIC: Field Access Expression is empty!");
         }
         if (!environment.containsKey(variableNames[0])) {
             throw new FieldDoesNotExistException(variableNames[0], environment.keySet());
@@ -113,29 +111,24 @@ public class TemplateInterpreter {
             if (variable == null) {
                 throw new VariableValueNullException(variableNames[i - 1]);
             }
+            Class<?> variableClass = variable.getClass();
             try {
-                //TODO check if variable name is null
-                Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
+                Field declaredField = variableClass.getDeclaredField(variableNames[i]);
                 declaredField.setAccessible(true);
                 variable = declaredField.get(variable);
             } catch (NoSuchFieldException _) {
-                throw new FieldDoesNotExistException(variableNames[i], variable.getClass());
+                throw new FieldDoesNotExistException(variableNames[i], variableClass);
             } catch (IllegalAccessException | InaccessibleObjectException | SecurityException e) {
-                throw new FieldNotAccessibleException(variableNames[i], variable.getClass(), e);
-            }
-            catch (IllegalArgumentException _) {
-                //TODO kinda panic, because we should never be here, this means we have mixed up the underlying type of
-                // declaredField, because of type erasure in getDeclaredField(...)
-                throw new InterpretationException("");
-            }
-            catch (ExceptionInInitializerError e) {
-                //TODO kinda panic, because this indicates something very weird that should not happen.
-                // not sure what this is, but sounds above my pay grade
-                throw new InterpretationException("", e);
-            }
-            catch (NullPointerException _) {
-                //TODO kinda panic, the name should never be null, not allowed by parsing
-                throw new InterpretationException("");
+                throw new FieldNotAccessibleException(variableNames[i], variableClass, e);
+            } catch (IllegalArgumentException _) {
+                // caused by declaredField.get(...)
+                throw new InterpretationException("PANIC: tried to get value from Field via Reflection on an instance from another class!");
+            } catch (ExceptionInInitializerError e) {
+                // I don't think that should really be thrown ever, because the class initializer should have run wen the object instance we got was created
+                throw new InterpretationException("PANIC: static initializer on class " + variableClass.getCanonicalName() + " through exception!", e);
+            } catch (NullPointerException e) {
+                // we should not encounter this, because we null checked all inputs to the functions that throw a NullPointerException
+                throw new InterpretationException("PANIC: NullPointerException thrown despite null checks", e);
             }
         }
         return variable;
