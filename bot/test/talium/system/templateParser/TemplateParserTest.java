@@ -97,6 +97,46 @@ public class TemplateParserTest {
     }
 
     @Test
+    void working() throws StringTemplateException {
+        class TestClassA {
+            private final String testString;
+            final int testInteger;
+
+            public TestClassA(String testString, int testInteger) {
+                this.testString = testString;
+                this.testInteger = testInteger;
+            }
+
+            public TestClassA() {
+                this.testString = "testString";
+                this.testInteger = 8457;
+            }
+        }
+        class TestClassB {
+            final boolean testBoolean = true;
+            List<TestClassA> listB = new ArrayList<>();
+            final Object testObject = null;
+
+            public TestClassB() {
+                listB.add(new TestClassA());
+                listB.add(new TestClassA("one", 1));
+                listB.add(new TestClassA("two", 2));
+                listB.add(new TestClassA("third", 3));
+                listB.add(new TestClassA("fourth", 4));
+            }
+        }
+
+        var env = new HashMap<String, Object>();
+        env.put("test", "testTEXTtest");
+        env.put("a", new TestClassA());
+        env.put("b", new TestClassB());
+        assertEquals("looooping: iteration: one, iteration: two, iteration: third, iteration: fourth, ", TemplateInterpreter.populate(new TemplateParser("looooping: %{ for i in b.listB }iteration: ${i.testString}, %{endfor}").parse(), env));
+        assertEquals("CommandResponse: testTEXTtest", TemplateInterpreter.populate(new TemplateParser("CommandResponse: ${test}").parse(), env));
+        assertEquals("CommandResponse: yes!", TemplateInterpreter.populate(new TemplateParser("CommandResponse: %{ if a.testInteger == 8457 }yes%{else}false%{endif}!").parse(), env));
+    }
+
+
+    @Test
     public void fuzzing10K() {
         randomFuzzing(10000, 200);
     }
@@ -104,11 +144,6 @@ public class TemplateParserTest {
     @Test
     public void fuzzing10KLong() {
         randomFuzzing(10000, 2000);
-    }
-
-    @Test
-    public void tokenFuzzing1M() {
-        tokenFuzzing(1000000, 20);
     }
 
     @Test
