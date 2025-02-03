@@ -67,7 +67,7 @@ public class TwitchBot {
         try {
             input.run();
         } catch (RuntimeException e) {
-            logger.error("Exception starting Input: {} because: {}", input.getClass().getSimpleName(), e.getMessage());
+            logger.error("Exception starting Input: {} because: {}", input.getClass().getCanonicalName(), e.getMessage());
             HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
         }
         return input;
@@ -78,7 +78,7 @@ public class TwitchBot {
             try {
                 input.shutdown();
             } catch (Exception e) {
-                logger.error("Exception stopping Input: {} because: {}", input.getClass().getSimpleName(), e.getMessage());
+                logger.error("Exception stopping Input: {} because: {}", input.getClass().getCanonicalName(), e.getMessage());
                 HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
             }
         }
