@@ -29,7 +29,7 @@ public class TemplateParser {
     public List<Statement> parse() throws ParsingException {
         List<Statement> statements = new ArrayList<>();
         while (!src.isEOF()) {
-            statements.add(parseToken(src.parseToken()));
+            statements.add(parseStatement(src.parseToken()));
         }
         return statements;
     }
@@ -38,7 +38,7 @@ public class TemplateParser {
      * Parses the next statement out of the stream of tokens
      */
     @NonNull
-    public Statement parseToken(TemplateToken current) throws ParsingException {
+    public Statement parseStatement(TemplateToken current) throws ParsingException {
         if (current.kind() == TemplateTokenKind.TEXT) {
             return new TextStatement(current.value());
         } else if (current.kind() == TemplateTokenKind.VAR) {
@@ -52,7 +52,7 @@ public class TemplateParser {
                 // we need to check the next token, instead of the next statement, because we only want to parse
                 // the next statement if we have reached the end of the for statement.
                 // But when we get the next token to check, we have already consumed that token, so we need to give it to
-                // parseToken(...) if we need to parse it, because it wasn't the end
+                // parseStatement(...) if we need to parse it, because it wasn't the end
                 var curr = src.parseToken();
                 if (curr.kind() == TemplateTokenKind.IF_ELSE) {
                     isElse = true;
@@ -62,9 +62,9 @@ public class TemplateParser {
                     break;
                 }
                 if (!isElse) {
-                    then.add(parseToken(curr));
+                    then.add(parseStatement(curr));
                 } else {
-                    other.add(parseToken(curr));
+                    other.add(parseStatement(curr));
                 }
             }
             return new IfStatement(comparison, then, other);
@@ -78,12 +78,12 @@ public class TemplateParser {
                 // we need to check the next token, instead of the next statement, because we only want to parse
                 // the next statement if we have reached the end of the for statement.
                 // But when we get the next token to check, we have already consumed that token, so we need to give it to
-                // parseToken(...) if we need to parse it, because it wasn't the end
+                // parseStatement(...) if we need to parse it, because it wasn't the end
                 var curr = src.parseToken();
                 if (curr.kind() == TemplateTokenKind.FOR_END) {
                     break;
                 }
-                body.add(parseToken(curr));
+                body.add(parseStatement(curr));
             }
             VarStatement listVar = VarStatement.create(head[1].trim());
             return new LoopStatement(head[0].trim(), listVar, body);
