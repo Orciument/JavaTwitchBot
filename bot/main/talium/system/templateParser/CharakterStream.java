@@ -84,6 +84,18 @@ public class CharakterStream {
         return buffer.toString();
     }
 
+    public String readTillWhitespaceOr(char c) throws UnexpectedEndOfInputException {
+        skipWhitespace();
+        StringBuilder buffer = new StringBuilder();
+        while (!isEOF() && !Character.isWhitespace(peek())) {
+            if (peek() == c) {
+                break;
+            }
+            buffer.append(next());
+        }
+        return buffer.toString();
+    }
+
     /**
      * consumes all characters until a non whitespace character is encountered
      */
@@ -93,11 +105,4 @@ public class CharakterStream {
         }
     }
 
-    public String src() {
-        return src;
-    }
-
-    public int pos() {
-        return pos;
-    }
 }

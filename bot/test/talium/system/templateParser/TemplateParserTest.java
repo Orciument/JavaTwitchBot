@@ -6,13 +6,12 @@ import org.junit.jupiter.api.Test;
 import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.statements.TextStatement;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TemplateParserTest {
     private static final List<String> tokensStrings = new ArrayList<>();
@@ -76,8 +75,25 @@ public class TemplateParserTest {
     }
 
     @Test
-    public void fuzzing1M() {
-        randomFuzzing(1000000, 200);
+    void returnNonNull() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
+        assert !new TemplateLexer("t%{   endif }").parse().contains(null);
+    }
+
+    @Test
+    void unnecessary_tokens_to_text() throws ParsingException {
+        assert new TemplateParser("t%{ endif }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endif }")));
+        assert new TemplateParser("t%{ endfor }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endfor }")));
+        assert new TemplateParser("t%{ else }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ else }")));
+    }
+
+    @Test
+    void for_at_end_of_input() throws ParsingException {
+        new TemplateParser("%{ for i in b.list }%{endfor}").parse();
+    }
+
+    @Test
+    void if_at_end_of_input() throws ParsingException {
+        new TemplateParser("%{ if a == b }%{endif}").parse();
     }
 
     @Test
@@ -98,6 +114,16 @@ public class TemplateParserTest {
     @Test
     public void tokenFuzzing10K() {
         tokenFuzzing(10000, 20);
+    }
+
+    @Test
+    public void fuzzing1M() {
+        randomFuzzing(1000000, 200);
+    }
+
+    @Test
+    public void tokenFuzzing1M() {
+        tokenFuzzing(1000000, 20);
     }
 
     @Test
@@ -135,17 +161,7 @@ public class TemplateParserTest {
         }
     }
 
-    @Test
-    void returnNonNull() throws UnexpectedTokenException, UnsupportedDirective, UnexpectedEndOfInputException {
-        assert !new TemplateLexer("t%{   endif }").parse().contains(null);
-    }
-
-    @Test
-    void unnecessary_tokens_to_text() throws ParsingException {
-        assert new TemplateParser("t%{ endif }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endif }")));
-        assert new TemplateParser("t%{ endfor }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ endfor }")));
-        assert new TemplateParser("t%{ else }").parse().equals(List.of(new TextStatement("t"), new TextStatement("%{ else }")));
-    }
+    // TODO check for colliding assignment, when for variable assigns value, but a var was already there
 
     //TODO add end-to-end tests, input string and environment, test result string
 }
