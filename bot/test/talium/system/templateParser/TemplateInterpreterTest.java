@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static talium.system.templateParser.TemplateInterpreter.getNestedReplacement;
 import static talium.system.templateParser.TemplateInterpreter.populate;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class TemplateInterpreterTest {
     static List<Statement> TEMPLATE_VAR;
@@ -72,14 +72,14 @@ public class TemplateInterpreterTest {
         void var() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("name", "dummy name");
-            assert populate(TEMPLATE_VAR, map).equals("Hello, dummy name!");
+            assertEquals("Hello, dummy name!", populate(TEMPLATE_VAR, map));
         }
 
         @Test
         void iterate_empty_list() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("loopVar", new ArrayList<>());
-            assert populate(TEMPLATE_LOOP, map).equals("Hello,!");
+            assertEquals("Hello,!", populate(TEMPLATE_LOOP, map));
         }
 
         @Test
@@ -89,14 +89,14 @@ public class TemplateInterpreterTest {
             list.add(List.of("t-1.1", "t-1.2"));
             list.add(List.of("t-2.1", "t-2.2"));
             map.put("loopVar", list);
-            assert populate(NESTED_LOOP, map).equals("Hello, t-1.1 t-1.2 | t-2.1 t-2.2 |!");
+            assertEquals("Hello, t-1.1 t-1.2 | t-2.1 t-2.2 |!", populate(NESTED_LOOP, map));
         }
 
         @Test
         void if_() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("compLeft", "testString");
-            assert populate(TEMPLATE_IF, map).equals("Hello, testString!");
+            assertEquals("Hello, testString!", populate(TEMPLATE_IF, map));
         }
 
         @Test
@@ -120,7 +120,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("test", "testing String");
             map.put("dummyVar", 23899);
-            assert getNestedReplacement(VarStatement.create("test"), map).equals("testing String");
+            assertEquals("testing String", getNestedReplacement(VarStatement.create("test"), map));
         }
 
         @Test
@@ -128,7 +128,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("integerValue", 23899);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement(VarStatement.create("integerValue"), map).equals(23899);
+            assertEquals(23899, getNestedReplacement(VarStatement.create("integerValue"), map));
         }
 
         @Test
@@ -137,7 +137,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement(VarStatement.create("testObject.testInteger"), map).equals(23899);
+            assertEquals(23899, getNestedReplacement(VarStatement.create("testObject.testInteger"), map));
         }
 
         @Test
@@ -148,7 +148,7 @@ public class TemplateInterpreterTest {
             list.add("dummyString");
             map.put("listVar", list);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement(VarStatement.create("listVar"), map).equals(list);
+            assertEquals(list, getNestedReplacement(VarStatement.create("listVar"), map));
         }
 
         @Test
@@ -169,7 +169,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement(VarStatement.create("testObject.testString"), map) == null;
+            assertNull(getNestedReplacement(VarStatement.create("testObject.testString"), map));
         }
 
         @Test
@@ -187,7 +187,7 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement(VarStatement.create("testObject.testString"), map).equals("testString");
+            assertEquals("testString", getNestedReplacement(VarStatement.create("testObject.testString"), map));
         }
 
         @Test
