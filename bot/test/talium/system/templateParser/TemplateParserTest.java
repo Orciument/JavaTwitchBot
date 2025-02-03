@@ -130,7 +130,7 @@ public class TemplateParserTest {
         env.put("test", "testTEXTtest");
         env.put("a", new TestClassA());
         env.put("b", new TestClassB());
-        assertEquals("looooping: iteration: one, iteration: two, iteration: third, iteration: fourth, ", TemplateInterpreter.populate(new TemplateParser("looooping: %{ for i in b.listB }iteration: ${i.testString}, %{endfor}").parse(), env));
+        assertEquals("looooping: iteration: testString, iteration: one, iteration: two, iteration: third, iteration: fourth, ", TemplateInterpreter.populate(new TemplateParser("looooping: %{ for i in b.listB }iteration: ${i.testString}, %{endfor}").parse(), env));
         assertEquals("CommandResponse: testTEXTtest", TemplateInterpreter.populate(new TemplateParser("CommandResponse: ${test}").parse(), env));
         assertEquals("CommandResponse: yes!", TemplateInterpreter.populate(new TemplateParser("CommandResponse: %{ if a.testInteger == 8457 }yes%{else}false%{endif}!").parse(), env));
     }
