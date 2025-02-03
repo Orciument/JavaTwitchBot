@@ -148,6 +148,4 @@ public class TemplateParserTest {
     }
 
     //TODO add end-to-end tests, input string and environment, test result string
-
-    //TODO probably not this file, but test loop directive
 }
