@@ -197,6 +197,4 @@ public class TemplateParserTest {
     }
 
     // TODO check for colliding assignment, when for variable assigns value, but a var was already there
-
-    //TODO add end-to-end tests, input string and environment, test result string
 }
