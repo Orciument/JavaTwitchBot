@@ -2,6 +2,7 @@ package talium;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.persistence.PreRemove;
+import talium.inputs.TipeeeStream.TipeeeConfig;
 import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.system.StopWatch;
@@ -33,14 +34,14 @@ public class TwitchBot {
 
     public static void startup() {
         StopWatch time = new StopWatch(StopWatch.TYPE.STARTUP);
-        SpringApplication.run(TwitchBot.class);
+        var ctx = SpringApplication.run(TwitchBot.class);
         System.out.println();
         System.out.println("DateFormat: DayNumber-Hour:Minute:Second:Millis");
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
         System.out.println("-----------------|-----|-[-------------]---------------------------------------------------------------------------------------------------------------------------------------------");
 
         twitch = startInput(new Twitch4JInput());
-        tipeee = startInput(new TipeeeInput());
+        tipeee = startInput(new TipeeeInput(ctx.getBean(TipeeeConfig.class)));
 
         logger.info("Inputs started, initializing other system components...");
         // This section is used to pass the execution/control to different parts of the bot to do some initialisation

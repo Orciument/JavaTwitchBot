@@ -4,7 +4,6 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.engineio.client.EngineIOException;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
 import talium.Registrar;
 import talium.TwitchBot;
 import talium.system.inputSystem.BotInput;
@@ -14,7 +13,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,34 +23,14 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.Arrays;
 
-@Component
 public class TipeeeInput implements BotInput {
-    private static final String tipeeeSocketInfoUrl = "https://api.tipeeestream.com/v2.0/site/socket";
-
-    // we can set this manually as a backup if the response of the tipeeeSocketInfoUrl isn't updated
-    @Value("${tipeeeSocketUrl}")
-    public static void setTipeeeSocketUrl(String tipeeeSocketUrl) {
-        TipeeeInput.tipeeeSocketUrl = tipeeeSocketUrl;
-    }
-
-    private static String tipeeeSocketUrl;
-
-    @Value("${tipeeeApikey}")
-    public void setApiKey(String apiKey) {
-        TipeeeInput.apiKey = apiKey;
-    }
-
-    private static String apiKey;
-
-    @Value("${tipeeeChannel}")
-    public void setChannelName(String channelName) {
-        TipeeeInput.channelName = channelName;
-    }
-
-    private static String channelName;
-
-    private Socket socket;
     private static final Logger LOGGER = LoggerFactory.getLogger(TipeeeInput.class);
+    private Socket socket;
+    private TipeeeConfig config;
+
+    public TipeeeInput(TipeeeConfig config) {
+        this.config = config;
+    }
 
     @Override
     public void shutdown() {
@@ -65,23 +43,27 @@ public class TipeeeInput implements BotInput {
 
     @Override
     public void run() {
+        //TODO split all run() content into other function, that function thorws instead of logging, catch all and just log in run()
+        // that way we can test the throwing behaviour of this class
+        //TODO correction, this function should be renamed to "start"/startup, it is allowed to throw, that is caught by
+        // TwitchBot.startInput and already handled well. But when creating a new thread in here,
+        // the inside of the thread should have it's own error boundary, and log all errors
         Registrar.registerHealthDescription(TipeeeInput.class, "TipeeeStreamInput", "");
-
-        if (apiKey == null || apiKey.isEmpty() && channelName == null || channelName.isEmpty()) {
+        if (config.isDisabled()) {
             LOGGER.warn("TipeeeStream Module is disabled");
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.STOPPED);
             return;
         }
         HealthManager.reportStatus(TipeeeInput.class, InputStatus.STARTING);
-        LOGGER.info("Stating TipeeeInput for Channel {}", channelName);
-        if (tipeeeSocketUrl == null || tipeeeSocketUrl.isEmpty()) {
+        LOGGER.info("Stating TipeeeInput for Channel {}", config.channelName());
+        if (!config.hasSocketUrl()) {
             LOGGER.info("Getting current Tipeee Socket.io url...");
-            tipeeeSocketUrl = STR."\{getSocketUrlFromUrl()}?access_token=";
+            config = new TipeeeConfig(config, STR."\{getSocketUrlFromUrl(config.tipeeeSocketInfoUrl())}?access_token=");
         }
 
         URI socketUrl;
         try {
-            socketUrl = new URI(tipeeeSocketUrl + apiKey);
+            socketUrl = new URI(config.socketUrl().get() + config.apiKey());
         } catch (URISyntaxException e) {
             LOGGER.error("tipeeeSocketUrl is not a valid url", e);
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
@@ -109,12 +91,13 @@ public class TipeeeInput implements BotInput {
         });
 
         socket.on(Socket.EVENT_CONNECT, _ -> {
-            socket.emit("join-room", STR."{ room: '\{apiKey}', username: '\{channelName}'}");
+            socket.emit("join-room", STR."{ room: '\{config.apiKey()}', username: '\{config.channelName()}'}");
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.HEALTHY);
         });
 
         socket.on("new-event", data -> TipeeeEventHandler.handleDonationEvent(Arrays.toString(data)));
 
+        // creates a new thread that receives the events and triggers our listeners
         socket.connect();
         //Wait for the Socket to connect, because it will be opened in a new Thread and
         // so will otherwise not be done by the time we check if the starting has worked
@@ -124,10 +107,10 @@ public class TipeeeInput implements BotInput {
         LOGGER.info("Tipeee socket connected");
     }
 
-    private String getSocketUrlFromUrl() {
+    private String getSocketUrlFromUrl(String socketInfoUrl) {
         try {
             var client = HttpClient.newBuilder().build();
-            var request = HttpRequest.newBuilder(URI.create(tipeeeSocketInfoUrl)).GET().build();
+            var request = HttpRequest.newBuilder(URI.create(socketInfoUrl)).GET().build();
             var httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
             client.close();
             var d = new JSONObject(httpResponse.body()).getJSONObject("datas");
