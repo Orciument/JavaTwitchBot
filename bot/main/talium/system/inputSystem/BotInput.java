@@ -1,8 +1,7 @@
 package talium.system.inputSystem;
 
-public interface BotInput extends Runnable {
-    @Override
-    void run();
+public interface BotInput {
+    void startup() throws Exception;
 
     void shutdown();
 }

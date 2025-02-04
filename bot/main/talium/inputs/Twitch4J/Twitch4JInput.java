@@ -73,7 +73,7 @@ public class Twitch4JInput implements BotInput {
     protected static String broadCasterChannelId;
 
     @Override
-    public void run() {
+    public void startup() {
         logger.debug("Starting... ");
         Registrar.registerHealthDescription(Twitch4JInput.class, "Twitch4JInput", "");
         HealthManager.reportStatus(Twitch4JInput.class, InputStatus.STARTING);
