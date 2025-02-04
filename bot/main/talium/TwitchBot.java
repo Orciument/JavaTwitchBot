@@ -66,8 +66,8 @@ public class TwitchBot {
 
     private static BotInput startInput(BotInput input) {
         try {
-            input.run();
-        } catch (RuntimeException e) {
+            input.startup();
+        } catch (Exception e) {
             logger.error("Exception starting Input: {} because: {}", input.getClass().getCanonicalName(), e.getMessage());
             HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
         }
@@ -75,13 +75,11 @@ public class TwitchBot {
     }
 
     private static void stopInput(BotInput input) {
-        if (input != null) {
-            try {
-                input.shutdown();
-            } catch (Exception e) {
-                logger.error("Exception stopping Input: {} because: {}", input.getClass().getCanonicalName(), e.getMessage());
-                HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
-            }
+        try {
+            input.shutdown();
+        } catch (Exception e) {
+            logger.error("Exception stopping Input: {} because: {}", input.getClass().getCanonicalName(), e.getMessage());
+            HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
         }
     }
 }

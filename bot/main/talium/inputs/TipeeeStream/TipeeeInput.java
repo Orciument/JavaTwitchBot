@@ -24,6 +24,23 @@ import java.time.Instant;
 import java.util.Arrays;
 
 public class TipeeeInput implements BotInput {
+
+    public static class TipeeeStreamException extends Exception {
+        public TipeeeStreamException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    public static class NoValidSocketUrl extends TipeeeStreamException {
+        public NoValidSocketUrl(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+    public static class SocketInfoEndpointException extends TipeeeStreamException {
+        public SocketInfoEndpointException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TipeeeInput.class);
     private Socket socket;
     private TipeeeConfig config;
@@ -32,7 +49,6 @@ public class TipeeeInput implements BotInput {
         this.config = config;
     }
 
-    @Override
     public void shutdown() {
         if (socket != null) {
             socket.close();
@@ -42,12 +58,7 @@ public class TipeeeInput implements BotInput {
     }
 
     @Override
-    public void run() {
-        //TODO split all run() content into other function, that function thorws instead of logging, catch all and just log in run()
-        // that way we can test the throwing behaviour of this class
-        //TODO correction, this function should be renamed to "start"/startup, it is allowed to throw, that is caught by
-        // TwitchBot.startInput and already handled well. But when creating a new thread in here,
-        // the inside of the thread should have it's own error boundary, and log all errors
+    public void startup() throws TipeeeStreamException {
         Registrar.registerHealthDescription(TipeeeInput.class, "TipeeeStreamInput", "");
         if (config.isDisabled()) {
             LOGGER.warn("TipeeeStream Module is disabled");
@@ -58,36 +69,39 @@ public class TipeeeInput implements BotInput {
         LOGGER.info("Stating TipeeeInput for Channel {}", config.channelName());
         if (!config.hasSocketUrl()) {
             LOGGER.info("Getting current Tipeee Socket.io url...");
-            config = new TipeeeConfig(config, STR."\{getSocketUrlFromUrl(config.tipeeeSocketInfoUrl())}?access_token=");
+            try {
+                String socketUrlFromUrl = getSocketUrlFromUrl(config.tipeeeSocketInfoUrl());
+                config = new TipeeeConfig(config, STR."\{socketUrlFromUrl}?access_token=");
+            } catch (SocketInfoEndpointException e) {
+                throw new NoValidSocketUrl("Could not get up-to-date socket url from url Info endpoint", e);
+            }
         }
 
         URI socketUrl;
         try {
             socketUrl = new URI(config.socketUrl().get() + config.apiKey());
         } catch (URISyntaxException e) {
-            LOGGER.error("tipeeeSocketUrl is not a valid url", e);
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
-            throw new RuntimeException(e);
+            throw new NoValidSocketUrl("Could not build valid socket Url: ", e);
         }
 
         LOGGER.info("using Socket.io url: {}", socketUrl);
         socket = IO.socket(socketUrl);
-
 
         socket.on(Socket.EVENT_CONNECT_ERROR, objects -> {
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
             if (objects.length == 1 && objects[0] instanceof EngineIOException && ((EngineIOException) objects[0]).getCause() instanceof IOException io) {
                 if (io.getMessage().equals("403")) {
                     LOGGER.error("TipeeeStream Authentication failed, likely because the Apikey is invalid");
-                    socket.disconnect();
                 } else if (StringUtils.isNumeric(io.getMessage())) {
                     LOGGER.error("TipeeeStream Socket connection failed with (what likely is) Http Status code: {}", io.getMessage());
                     ((EngineIOException) objects[0]).printStackTrace();
                 }
             } else {
-                LOGGER.error("Failed to connect to tipeeeStream Websocket: {}", Arrays.toString(objects));
-                throw new RuntimeException(Arrays.toString(objects));
+                LOGGER.error("Failed to connect to tipeeeStream Websocket for unknown reason: {}", Arrays.toString(objects));
             }
+            HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
+            socket.disconnect();
         });
 
         socket.on(Socket.EVENT_CONNECT, _ -> {
@@ -107,7 +121,7 @@ public class TipeeeInput implements BotInput {
         LOGGER.info("Tipeee socket connected");
     }
 
-    private String getSocketUrlFromUrl(String socketInfoUrl) {
+    private String getSocketUrlFromUrl(String socketInfoUrl) throws SocketInfoEndpointException {
         try {
             var client = HttpClient.newBuilder().build();
             var request = HttpRequest.newBuilder(URI.create(socketInfoUrl)).GET().build();
@@ -116,11 +130,9 @@ public class TipeeeInput implements BotInput {
             var d = new JSONObject(httpResponse.body()).getJSONObject("datas");
             return STR."\{d.getString("host")}:\{d.getString("port")}";
         } catch (IOException | InterruptedException e) {
-            LOGGER.error("Error while requesting tipeeeStream socket url!", e);
-            throw new RuntimeException("Error while requesting tipeeeStream socket url!", e);
+            throw new SocketInfoEndpointException("Error while requesting tipeeeStream socket url!", e);
         } catch (JSONException e) {
-            LOGGER.error("TipeeeStream socket info Url responded with unknown format!", e);
-            throw new RuntimeException("TipeeeStream socket info Url responded with unknown format!", e);
+            throw new SocketInfoEndpointException("TipeeeStream socket info Url responded with unknown format!", e);
         }
     }
 
