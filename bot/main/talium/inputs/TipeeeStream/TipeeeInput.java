@@ -53,9 +53,11 @@ public class TipeeeInput implements BotInput {
     private static final Logger LOGGER = LoggerFactory.getLogger(TipeeeInput.class);
     private Socket socket;
     private final TipeeeConfig config;
+    private final DonationRepo donationRepo;
 
-    public TipeeeInput(TipeeeConfig config) {
+    public TipeeeInput(TipeeeConfig config, DonationRepo donationRepo) {
         this.config = config;
+        this.donationRepo = donationRepo;
     }
 
     public void shutdown() {
@@ -116,7 +118,7 @@ public class TipeeeInput implements BotInput {
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.HEALTHY);
         });
 
-        socket.on("new-event", data -> TipeeeEventHandler.handleDonationEvent(Arrays.toString(data)));
+        socket.on("new-event", data -> TipeeeEventHandler.handleDonationEvent(Arrays.toString(data), donationRepo));
 
         // creates a new thread that receives the events and triggers our listeners
         socket.connect();
