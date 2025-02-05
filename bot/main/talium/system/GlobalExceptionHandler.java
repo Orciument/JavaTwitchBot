@@ -10,6 +10,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(value = {Exception.class})
     public String generalException(Exception e) {
+        logger.error(e.getMessage(), e);
         return "An Exception occurred!";
     }
 }

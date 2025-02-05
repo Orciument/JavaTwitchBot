@@ -13,13 +13,6 @@ public class UserAuthenticationToken implements Authentication {
     Optional<PanelUser> botUser;
     List<SimpleGrantedAuthority> grantedAuthorities;
 
-    public UserAuthenticationToken(String accessToken, boolean isAuthenticated, PanelUser panelUser, SimpleGrantedAuthority ...authority) {
-        this.accessToken = accessToken;
-        this.isAuthenticated = isAuthenticated;
-        this.botUser = Optional.ofNullable(panelUser);
-        this.grantedAuthorities = Arrays.stream(authority).toList();
-    }
-
     public UserAuthenticationToken(String accessToken, boolean isAuthenticated) {
         this.accessToken = accessToken;
         this.isAuthenticated = isAuthenticated;

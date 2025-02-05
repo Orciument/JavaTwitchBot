@@ -35,7 +35,7 @@ public class StopWatch {
                 endMessage = "Finished Bot shutdown";
             }
         }
-        if (startMessage.length() > 0)
+        if (!startMessage.isEmpty())
             logger.info("{}...", startMessage.trim());
     }
 

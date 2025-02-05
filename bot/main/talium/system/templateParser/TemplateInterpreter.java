@@ -1,16 +1,15 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.ArgumentValueNullException;
-import talium.system.templateParser.exeptions.UnIterableArgumentException;
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.ifParser.IfInterpreter;
 import talium.system.templateParser.statements.*;
 import talium.system.templateParser.tokens.Comparison;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Populates variables and interprets parsed String templates
@@ -21,53 +20,51 @@ public class TemplateInterpreter {
      * Populates variables and interprets parsed String templates
      *
      * @param template parsed template as list of statements
-     * @param values a map with all top level variables and their names
+     * @param environment a map with all top level variables and their names
      * @return the resulting string
      */
-    public static String populate(List<Statement> template, HashMap<String, Object> values) throws NoSuchFieldException, ArgumentValueNullException, IllegalAccessException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
-        String out = "";
+    public static String populate(List<Statement> template, Map<String, Object> environment) throws InterpretationException  {
+        if (environment == null) {
+            environment = new HashMap<>();
+        }
+        StringBuilder out = new StringBuilder();
         for (Statement statement : template) {
-            if (statement instanceof TextStatement textStatement) {
-                out += textStatement.text();
+            if (statement instanceof TextStatement(String text)) {
+                out.append(text);
             } else if (statement instanceof VarStatement varStatement) {
-                out += getNestedReplacement(varStatement.name(), values).toString();
-            } else if (statement instanceof IfStatement ifStatement) {
+                Object nestedReplacement = getNestedReplacement(varStatement, environment);
+                out.append(nestedReplacement);
+            } else if (statement instanceof IfStatement(Comparison comparison, List<Statement> then, List<Statement> other)) {
                 // replace Vars with actual values
-                Object left = ifStatement.comparison().left();
+                Object left = comparison.left();
                 if (left instanceof VarStatement leftVar) {
-                    left = castToValidInput(getNestedReplacement(leftVar.name(), values));
+                    left = castToValidInput(getNestedReplacement(leftVar, environment));
                 }
-                Object right = ifStatement.comparison().right();
+                Object right = comparison.right();
                 if (right instanceof VarStatement rightVar) {
-                    right = castToValidInput(getNestedReplacement(rightVar.name(), values));
+                    right = castToValidInput(getNestedReplacement(rightVar, environment));
                 }
 
-                boolean condition = IfInterpreter.compare(new Comparison(left, ifStatement.comparison().equals(), right));
-                if (condition) {
-                    out += populate(ifStatement.then(), values);
+                if (IfInterpreter.compare(new Comparison(left, comparison.equals(), right))) {
+                    out.append(populate(then, environment));
                 } else {
-                    out += populate(ifStatement.other(), values);
+                    out.append(populate(other, environment));
                 }
-            } else if (statement instanceof LoopStatement loop) {
-                String[] varParts = loop.var().split("\\[*]");
-                Object nestedReplacement = getNestedReplacement(varParts[0], values);
+            } else if (statement instanceof LoopStatement(String varName, VarStatement var, List<Statement> body)) {
+                Object list = getNestedReplacement(var, environment);
 
-                if (!(nestedReplacement instanceof Iterable<?>)) {
-                    throw new UnIterableArgumentException(varParts[0]);
+                if (!(list instanceof Iterable<?>)) {
+                    throw new UnIterableArgumentException(var.accessExpr());
                 }
 
-                //noinspection unchecked
-                for (Object item : (Iterable<Object>) nestedReplacement) {
-                    values.put(loop.name(), item);
-                    if (varParts.length > 1) {
-                        values.put(loop.name(), getNestedReplacement(varParts[1], values));
-                    }
-                    out += populate(loop.body(), values);
+                for (Object item : (Iterable<?>) list) {
+                    environment.put(varName, item);
+                    out.append(populate(body, environment));
                 }
-                values.remove(loop.name());
+                environment.remove(varName);
             }
         }
-        return out;
+        return out.toString();
     }
 
     /**
@@ -90,24 +87,49 @@ public class TemplateInterpreter {
     }
 
     /**
-     * Tries to resolve and get the Value at the given variable path.
-     * Throws an Exception if the path does not exist.
+     * Tries to resolve and get the Value at the given field access expression from the environment map.
      *
-     * @param varName dot . delimited path of variable names
-     * @param values  List of top level variables
-     * @return value of the variable
-     * @apiNote Does not support getters or any functions
+     * @param varExpr dot . delimited path of variable names
+     * @param environment List of top level variables
+     * @return value of the variable, this can be null, if the last field is returning the null value
+     * @apiNote Does not support getters or executing any functions
+     * @throws FieldDoesNotExistException if the variable to be accessed does not exist on the object, or in the environment
+     * @throws VariableValueNullException if the value of a variable is null, but a field on this variable is supposed to be accessed
+     * @throws FieldNotAccessibleException if the value of the field can not be retrieved because of java visibility checks (e.g. private
+     * @throws InterpretationException is thrown when a state is reached that should not be possible. This indicates an actual bug, instead of an error with the template string.
      */
-    public static Object getNestedReplacement(String varName, HashMap<String, Object> values) throws ArgumentValueNullException, NoSuchFieldException, IllegalAccessException {
-        String[] variableNames = varName.split("\\.");
-        Object variable = values.get(variableNames[0]);
+    public static Object getNestedReplacement(VarStatement varExpr, Map<String, Object> environment) throws InterpretationException  {
+        String[] variableNames = varExpr.accessExpr().split("\\.");
+        if (variableNames.length == 0) {
+            throw new InterpretationException("PANIC: Field Access Expression is empty!");
+        }
+        if (!environment.containsKey(variableNames[0])) {
+            throw new FieldDoesNotExistException(variableNames[0], environment.keySet());
+        }
+        Object variable = environment.get(variableNames[0]);
         for (int i = 1; i < variableNames.length; i++) {
             if (variable == null) {
-                throw new ArgumentValueNullException(variableNames[i - 1]);
+                throw new VariableValueNullException(variableNames[i - 1]);
             }
-            Field declaredField = variable.getClass().getDeclaredField(variableNames[i]);
-            declaredField.setAccessible(true);
-            variable = declaredField.get(variable);
+            Class<?> variableClass = variable.getClass();
+            try {
+                Field declaredField = variableClass.getDeclaredField(variableNames[i]);
+                declaredField.setAccessible(true);
+                variable = declaredField.get(variable);
+            } catch (NoSuchFieldException _) {
+                throw new FieldDoesNotExistException(variableNames[i], variableClass);
+            } catch (IllegalAccessException | InaccessibleObjectException | SecurityException e) {
+                throw new FieldNotAccessibleException(variableNames[i], variableClass, e);
+            } catch (IllegalArgumentException _) {
+                // caused by declaredField.get(...)
+                throw new InterpretationException("PANIC: tried to get value from Field via Reflection on an instance from another class!");
+            } catch (ExceptionInInitializerError e) {
+                // I don't think that should really be thrown ever, because the class initializer should have run wen the object instance we got was created
+                throw new InterpretationException("PANIC: static initializer on class " + variableClass.getCanonicalName() + " through exception!", e);
+            } catch (NullPointerException e) {
+                // we should not encounter this, because we null checked all inputs to the functions that throw a NullPointerException
+                throw new InterpretationException("PANIC: NullPointerException thrown despite null checks", e);
+            }
         }
         return variable;
     }

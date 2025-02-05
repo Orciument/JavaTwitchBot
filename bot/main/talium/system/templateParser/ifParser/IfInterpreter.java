@@ -1,7 +1,6 @@
 package talium.system.templateParser.ifParser;
 
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.ImpossibleComparisonException;
 import talium.system.templateParser.statements.Equals;
 import talium.system.templateParser.tokens.Comparison;
 
@@ -24,27 +23,41 @@ public class IfInterpreter {
      * <br>
      * <br>
      * All ints and floats are cast into longs and floats respectively.
+     *
      * @param comp prepared comparison
      * @return boolean result
      */
-    public static boolean compare(Comparison comp) throws UnsupportedComparisonOperator, UnsupportedComparandType {
+    public static boolean compare(Comparison comp) throws ImpossibleComparisonException {
         Object l = comp.left();
         Object r = comp.right();
-        if (l instanceof String || l instanceof Character && r instanceof String || r instanceof Character) {
-            l = l.toString();
-            r = r.toString();
+        if (l == null && r == null) {
+            //both are null
             return switch (comp.equals()) {
-                case EQUALS -> l.equals(r);
-                case NOT_EQUALS -> !l.equals(r);
+                case EQUALS, LESS_THAN_OR_EQUALS, GREATER_THAN_OR_EQUALS -> true;
+                case NOT_EQUALS, LESS_THAN, GREATER_THAN -> false;
+            };
+        } else if (l == null || r == null) {
+            //one is null
+            return switch (comp.equals()) {
+                case EQUALS -> false;
+                case NOT_EQUALS -> true;
+                default -> throw new ImpossibleComparisonException(l, r, comp.equals());
+            };
+        } else if ((l instanceof String || l instanceof Character) && (r instanceof String || r instanceof Character)) {
+            String left = l.toString();
+            String right = r.toString();
+            return switch (comp.equals()) {
+                case EQUALS -> left.equals(right);
+                case NOT_EQUALS -> !left.equals(right);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
-                        throw new UnsupportedComparisonOperator(STR."\{comp.equals().name()} is not a supported comparison operation between Strings/Charactern");
+                        throw new ImpossibleComparisonException(l, r, comp.equals());
             };
         } else if (l instanceof Boolean && r instanceof Boolean) {
             return switch (comp.equals()) {
                 case EQUALS -> l.equals(r);
                 case NOT_EQUALS -> !l.equals(r);
                 case LESS_THAN, LESS_THAN_OR_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUALS ->
-                        throw new UnsupportedComparisonOperator(STR."\{comp.equals().name()} is not a supported comparison operation between booleans");
+                        throw new ImpossibleComparisonException(l, r, comp.equals());
             };
         } else if ((l instanceof Double || l instanceof Float) && (r instanceof Double || r instanceof Float)) {
             Double ld = ((Number) l).doubleValue();
@@ -55,7 +68,7 @@ public class IfInterpreter {
             Long rl = ((Number) r).longValue();
             return compareLongs(ll, comp.equals(), rl);
         } else {
-            throw new UnsupportedComparandType(STR."Types \{l.getClass()} and \{r.getClass()} are not comparable to each other");
+            throw new ImpossibleComparisonException(l, r, comp.equals());
         }
     }
 

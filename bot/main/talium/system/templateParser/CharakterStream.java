@@ -1,12 +1,12 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
 import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
+import talium.system.templateParser.exeptions.UnexpectedTokenException;
 
 /**
- * A indexed Stream of characters for parsing.
+ * An indexed Stream of characters for parsing.
  */
-public class CharakterStream implements TokenStream<Character> {
+public class CharakterStream {
     String src;
     int pos;
 
@@ -14,14 +14,12 @@ public class CharakterStream implements TokenStream<Character> {
         this.src = src;
     }
 
-    @Override
-    public Character peek() throws UnsupportedOperationException {
+    public Character peek() throws UnexpectedEndOfInputException {
         if (isEOF())
             throw new UnexpectedEndOfInputException();
         return src.charAt(pos);
     }
 
-    @Override
     public Character next() throws UnexpectedEndOfInputException {
         if (isEOF())
             throw new UnexpectedEndOfInputException();
@@ -35,30 +33,16 @@ public class CharakterStream implements TokenStream<Character> {
      * If a different character is encountered, a syntax exception is thrown.
      * @param c the next expected character
      */
-    public void consume(Character c) {
+    public void consume(Character c) throws UnexpectedTokenException, UnexpectedEndOfInputException {
         if (isEOF()) {
-            throw new TemplateSyntaxException(String.valueOf(c), "END-OF-INPUT", pos - 1, src);
+            throw new UnexpectedTokenException(c, "END-OF-INPUT", pos - 1, src);
         }
         Character next = next();
         if (next != c) {
-            throw new TemplateSyntaxException(c, next, pos - 1, src);
+            throw new UnexpectedTokenException(c, next, pos - 1, src);
         }
     }
 
-
-    /**
-     * peeks the character after the next one
-     *
-     * @return the character after the next one
-     */
-    public Character future() throws UnexpectedEndOfInputException {
-        if (pos + 1 >= src.length()) {
-            return ' ';
-        }
-        return src.charAt(pos + 1);
-    }
-
-    @Override
     public boolean isEOF() {
         return pos == src.length();
     }
@@ -71,7 +55,7 @@ public class CharakterStream implements TokenStream<Character> {
      */
     public String readUntil(char c) throws UnexpectedEndOfInputException {
         skipWhitespace();
-        String buffer = "";
+        StringBuilder buffer = new StringBuilder();
         boolean escapeNext = false;
         while (!isEOF() && peek() != c || escapeNext) {
             if (peek() == '\\') { //TODO this impossible, we need to save separately if the last char was a -> \ (or check in the buffer) (also, if \ is the target char, we should exit)
@@ -80,24 +64,9 @@ public class CharakterStream implements TokenStream<Character> {
             if (escapeNext) {
                 escapeNext = false;
             }
-            buffer += next();
+            buffer.append(next());
         }
-        return buffer;
-    }
-
-    /**
-     * consume all characters up to and excluding the first character that is not a digit
-     *
-     * @return return all consumed characters up to the non digit char
-     * @see Character#isDigit(char)
-     */
-    public String readTillNotDigit() throws UnexpectedEndOfInputException {
-        skipWhitespace();
-        String buffer = "";
-        while (!Character.isDigit(peek())) {
-            buffer += next();
-        }
-        return buffer;
+        return buffer.toString();
     }
 
     /**
@@ -108,11 +77,23 @@ public class CharakterStream implements TokenStream<Character> {
      */
     public String readTillWhitespace() throws UnexpectedEndOfInputException {
         skipWhitespace();
-        String buffer = "";
+        StringBuilder buffer = new StringBuilder();
         while (!isEOF() && !Character.isWhitespace(peek())) {
-            buffer += next();
+            buffer.append(next());
         }
-        return buffer;
+        return buffer.toString();
+    }
+
+    public String readTillWhitespaceOr(char c) throws UnexpectedEndOfInputException {
+        skipWhitespace();
+        StringBuilder buffer = new StringBuilder();
+        while (!isEOF() && !Character.isWhitespace(peek())) {
+            if (peek() == c) {
+                break;
+            }
+            buffer.append(next());
+        }
+        return buffer.toString();
     }
 
     /**
@@ -124,11 +105,4 @@ public class CharakterStream implements TokenStream<Character> {
         }
     }
 
-    public String src() {
-        return src;
-    }
-
-    public int pos() {
-        return pos;
-    }
 }

@@ -85,6 +85,7 @@ public class TriggerEngine {
             logger.error("Could not find template id for command id {}", commandId);
             return;
         }
+        //TODO add message and other things to context, but currently we can't handle records
         Out.Twitch.sendRawTemplate(template.get().template, null);
     }
 

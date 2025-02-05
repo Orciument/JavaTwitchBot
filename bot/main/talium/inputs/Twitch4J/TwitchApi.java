@@ -1,6 +1,8 @@
 package talium.inputs.Twitch4J;
 
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
+import com.github.twitch4j.common.exception.UnauthorizedException;
+import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.Chatter;
 import com.github.twitch4j.helix.domain.User;
 
@@ -10,6 +12,23 @@ import java.util.Optional;
 
 // maybe add no-op version of helix api and just switch them when they are assigned, that way we should be able to remove all these null checking methods
 public class TwitchApi {
+
+    // wip: use higher-order-function to reduce boilerplate
+    private interface Call<T> {
+        T call(TwitchHelix helix);
+    }
+
+    private static<T> T doHelixCall(Call<T> call) {
+        try {
+            return call.call(Twitch4JInput.helix);
+        }  catch (UnauthorizedException e) {
+            //fix handle missing auth
+            return call.call(Twitch4JInput.helix);
+        } catch (Exception e) {
+            // ehh, log and throw i guess
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Sends a message in the chat specified by the twitchOutputToChannel Env with the bot account specified by the twitchBotAccountName env

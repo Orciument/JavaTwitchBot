@@ -1,9 +1,8 @@
 package talium.system.templateParser.ifParser;
 
+import org.springframework.lang.NonNull;
 import talium.system.templateParser.CharakterStream;
-import talium.system.templateParser.exeptions.TemplateSyntaxException;
-import talium.system.templateParser.exeptions.UnexpectedEndOfInputException;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.statements.Equals;
 import talium.system.templateParser.statements.VarStatement;
 import talium.system.templateParser.tokens.Comparison;
@@ -30,7 +29,7 @@ public class IfParser {
      * @param srcString entire unparsed if head
      * @return Comparison object
      */
-    public static Comparison parse(String srcString) throws UnsupportedComparisonOperator {
+    public static Comparison parse(String srcString) throws UnexpectedEndOfInputException, TemplateSyntaxException, UnsupportedComparisonOperator {
         CharakterStream src = new CharakterStream(srcString);
         IfToken[] tokens = new IfToken[3];
         for (int i = 0; i < 3; i++) {
@@ -65,7 +64,8 @@ public class IfParser {
      * @param src source character stream
      * @return the parsed token
      */
-    private static IfToken parseToken(CharakterStream src) throws UnexpectedEndOfInputException {
+    @NonNull
+    private static IfToken parseToken(CharakterStream src) throws UnexpectedEndOfInputException, UnexpectedTokenException {
         //TODO rebuild to consume one character per loop, save current state in var
         if (src.isEOF()) {
             throw new UnexpectedEndOfInputException();
@@ -104,20 +104,30 @@ public class IfParser {
     /**
      * get inner value out of token
      */
-    private static Object tokenToObject(IfToken token) {
-        return switch (token.kind()) {
-            case STRING -> token.value();
-            case VAR -> new VarStatement(token.value());
-            case INT -> {
-                var initialLong = Long.parseLong(token.value());
-                if (initialLong > Integer.MIN_VALUE && initialLong < Integer.MAX_VALUE) {
-                    yield (int) initialLong;
+    private static Object tokenToObject(IfToken token) throws TemplateSyntaxException {
+        if (token == null) {
+            throw new TemplateSyntaxException("Panik: IfToken is null");
+        }
+        try {
+            return switch (token.kind()) {
+                case STRING -> token.value();
+                case VAR -> VarStatement.create(token.value());
+                case INT -> {
+                    var initialLong = Long.parseLong(token.value());
+                    if (initialLong > Integer.MIN_VALUE && initialLong < Integer.MAX_VALUE) {
+                        yield (int) initialLong;
+                    }
+                    yield initialLong;
                 }
-                yield initialLong;
-            }
-            case DOUBLE -> Double.parseDouble(token.value());
-            case BOOLEAN -> Boolean.parseBoolean(token.value());
-            case COMPARISON -> throw new RuntimeException("Another Comparison not a valid Object for an comparison comparand");
-        };
+                case DOUBLE -> Double.parseDouble(token.value());
+                case BOOLEAN -> Boolean.parseBoolean(token.value());
+                case COMPARISON ->
+                        throw new TemplateSyntaxException("Another Comparison not a valid Object for an comparison comparand");
+            };
+        } catch (NumberFormatException e) {
+            throw new TemplateSyntaxException(token.value() + " is not a valid number", e);
+        } catch (NullPointerException e) {
+            throw new TemplateSyntaxException("null is not a valid number", e);
+        }
     }
 }

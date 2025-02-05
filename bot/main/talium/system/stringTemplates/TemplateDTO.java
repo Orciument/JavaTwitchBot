@@ -1,14 +1,6 @@
 package talium.system.stringTemplates;
 
-import org.jetbrains.annotations.NotNull;
-import talium.modules.donation_goal.GoalTemplateContext;
-import talium.system.twitchCommands.controller.TriggerDTO;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -18,18 +10,12 @@ public record TemplateDTO(
         String messageColor,
         String varJsonSchema
 ) {
-    public TemplateDTO(String id, String template, String messageColor, String varJsonSchema) {
-        this.id = id;
-        this.template = template;
-        this.messageColor = messageColor;
-        this.varJsonSchema = varJsonSchema;
-    }
 
     public TemplateDTO(Template template) {
         this(template.id, template.template, template.messageColor, "");
     }
 
-    private static String buildJsonSchema(HashMap<String, Class> vars) {
+    private static String buildJsonSchema(HashMap<String, Class<?>> vars) {
         StringBuilder varJsonSchema = new StringBuilder("{");
         for (var var : vars.entrySet()) {
             varJsonSchema.append(STR."\"\{var.getKey()}\":\{generateSchema(var.getValue())}, ");
@@ -40,7 +26,7 @@ public record TemplateDTO(
         return varJsonSchema.toString();
     }
 
-    private static String generateSchema(Class clazz) {
+    private static String generateSchema(Class<?> clazz) {
         if (clazz.isPrimitive()
                 || clazz == String.class
                 || clazz == Character.class
@@ -52,7 +38,7 @@ public record TemplateDTO(
                 || clazz == Double.class
                 || clazz == Boolean.class
         ) {
-            return STR."\"\{clazz.getSimpleName()}\"";
+            return STR."\"\{clazz.getCanonicalName()}\"";
         }
 
         if (clazz.isArray()) {

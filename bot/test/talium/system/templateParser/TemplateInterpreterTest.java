@@ -1,9 +1,6 @@
 package talium.system.templateParser;
 
-import talium.system.templateParser.exeptions.ArgumentValueNullException;
-import talium.system.templateParser.exeptions.UnIterableArgumentException;
-import talium.system.templateParser.exeptions.UnsupportedComparandType;
-import talium.system.templateParser.exeptions.UnsupportedComparisonOperator;
+import talium.system.templateParser.exeptions.*;
 import talium.system.templateParser.statements.*;
 import talium.system.templateParser.tokens.Comparison;
 import org.junit.jupiter.api.Nested;
@@ -11,48 +8,57 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static talium.system.templateParser.TemplateInterpreter.getNestedReplacement;
 import static talium.system.templateParser.TemplateInterpreter.populate;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class TemplateInterpreterTest {
-    static List<Statement> TEMPLATE_VAR = Arrays.asList(
-            new TextStatement("Hello, "),
-            new VarStatement("name"),
-            new TextStatement("!")
-    );
-    static List<Statement> TEMPLATE_IF = Arrays.asList(
-            new TextStatement("Hello, "),
-            new IfStatement(new Comparison(new VarStatement("compLeft"), Equals.EQUALS, "testString"),
-                    List.of(new VarStatement("compLeft")),
-                    List.of(new TextStatement("unnamed"))
-            ),
-            new TextStatement("!")
-    );
-    static List<Statement> TEMPLATE_LOOP = List.of(
-            new TextStatement("Hello,"),
-            new LoopStatement("varName", "loopVar", Arrays.asList(
-                    new TextStatement(" "),
-                    new VarStatement("varName")
-            )),
-            new TextStatement("!")
-    );
-    static List<Statement> NESTED_LOOP = Arrays.asList(
-            new TextStatement("Hello,"),
-            new LoopStatement("innerLoop", "loopVar", Arrays.asList(
-                    new LoopStatement("varName", "innerLoop", Arrays.asList(
+    static List<Statement> TEMPLATE_VAR;
+    static List<Statement> TEMPLATE_IF;
+    static List<Statement> TEMPLATE_LOOP;
+    static List<Statement> NESTED_LOOP;
+
+    static {
+        try {
+            TEMPLATE_VAR = Arrays.asList(
+                    new TextStatement("Hello, "),
+                    VarStatement.create("name"),
+                    new TextStatement("!")
+            );
+            TEMPLATE_IF = Arrays.asList(
+                    new TextStatement("Hello, "),
+                    new IfStatement(new Comparison(VarStatement.create("compLeft"), Equals.EQUALS, "testString"),
+                            List.of(VarStatement.create("compLeft")),
+                            List.of(new TextStatement("unnamed"))
+                    ),
+                    new TextStatement("!")
+            );
+            TEMPLATE_LOOP = List.of(
+                    new TextStatement("Hello,"),
+                    new LoopStatement("varName", VarStatement.create("loopVar"), Arrays.asList(
                             new TextStatement(" "),
-                            new VarStatement("varName")
+                            VarStatement.create("varName")
                     )),
-                    new TextStatement(" |")
-            )),
-            new TextStatement("!")
-    );
+                    new TextStatement("!")
+            );
+            NESTED_LOOP = Arrays.asList(
+                    new TextStatement("Hello,"),
+                    new LoopStatement("innerLoop", VarStatement.create("loopVar"), Arrays.asList(
+                            new LoopStatement("varName", VarStatement.create("innerLoop"), Arrays.asList(
+                                    new TextStatement(" "),
+                                    VarStatement.create("varName")
+                            )),
+                            new TextStatement(" |")
+                    )),
+                    new TextStatement("!")
+            );
+        } catch (TemplateSyntaxException _) {}
+    }
 
     @Nested
     class Populate {
         @Test
-        void iterate_non_iterable() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void iterate_non_iterable() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("loopVar", "this_is_not_a_list");
             try {
@@ -63,45 +69,44 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void var() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void var() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("name", "dummy name");
-            assert populate(TEMPLATE_VAR, map).equals("Hello, dummy name!");
+            assertEquals("Hello, dummy name!", populate(TEMPLATE_VAR, map));
         }
 
         @Test
-        void iterate_empty_list() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void iterate_empty_list() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("loopVar", new ArrayList<>());
-            assert populate(TEMPLATE_LOOP, map).equals("Hello,!");
+            assertEquals("Hello,!", populate(TEMPLATE_LOOP, map));
         }
 
         @Test
-        void nestedLoop() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void nestedLoop() throws InterpretationException  {
             HashMap<String, Object> map = new HashMap<>();
             ArrayList<List<String>> list = new ArrayList<>();
             list.add(List.of("t-1.1", "t-1.2"));
             list.add(List.of("t-2.1", "t-2.2"));
             map.put("loopVar", list);
-            assert populate(NESTED_LOOP, map).equals("Hello, t-1.1 t-1.2 | t-2.1 t-2.2 |!");
+            assertEquals("Hello, t-1.1 t-1.2 | t-2.1 t-2.2 |!", populate(NESTED_LOOP, map));
         }
 
         @Test
-        void if_() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparandType, UnsupportedComparisonOperator {
+        void if_() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("compLeft", "testString");
-            assert populate(TEMPLATE_IF, map).equals("Hello, testString!");
+            assertEquals("Hello, testString!", populate(TEMPLATE_IF, map));
         }
 
         @Test
-        void wrong_condition_type() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException, UnIterableArgumentException, UnsupportedComparisonOperator {
+        void wrong_condition_type() throws InterpretationException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("compLeft", false);
             try {
                 populate(TEMPLATE_IF, map);
-                fail("Should have thrown UnIterableArgumentException");
-            } catch (UnsupportedComparandType _) {
-            }
+                fail("Should have thrown ImpossibleComparisonException");
+            } catch (ImpossibleComparisonException _) {}
         }
     }
 
@@ -111,64 +116,64 @@ public class TemplateInterpreterTest {
         }
 
         @Test
-        void string() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void string() throws InterpretationException, TemplateSyntaxException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("test", "testing String");
             map.put("dummyVar", 23899);
-            assert getNestedReplacement("test", map).equals("testing String");
+            assertEquals("testing String", getNestedReplacement(VarStatement.create("test"), map));
         }
 
         @Test
-        void integer() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void integer() throws InterpretationException, TemplateSyntaxException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("integerValue", 23899);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("integerValue", map).equals(23899);
+            assertEquals(23899, getNestedReplacement(VarStatement.create("integerValue"), map));
         }
 
         @Test
-        void object_path() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void object_path() throws InterpretationException, TemplateSyntaxException {
             TestClass testClass = new TestClass("testString", 23899);
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("testObject.testInteger", map).equals(23899);
+            assertEquals(23899, getNestedReplacement(VarStatement.create("testObject.testInteger"), map));
         }
 
         @Test
-        void list() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void list() throws InterpretationException, TemplateSyntaxException {
             HashMap<String, Object> map = new HashMap<>();
             ArrayList<String> list = new ArrayList<>();
             list.add("dummyValue");
             list.add("dummyString");
             map.put("listVar", list);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("listVar", map).equals(list);
+            assertEquals(list, getNestedReplacement(VarStatement.create("listVar"), map));
         }
 
         @Test
-        void toplevel_null() throws NoSuchFieldException, IllegalAccessException {
+        void toplevel_null() throws InterpretationException, TemplateSyntaxException {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", null);
             map.put("dummyVar", "testing String");
             try {
-                getNestedReplacement("testObject.testInteger", map);
+                getNestedReplacement(VarStatement.create("testObject.testInteger"), map);
                 fail("Should have thrown NullArgumentException");
-            } catch (ArgumentValueNullException _) {
+            } catch (VariableValueNullException _) {
             }
         }
 
         @Test
-        void end_value_null() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void end_value_null() throws InterpretationException, TemplateSyntaxException {
             TestClass testClass = new TestClass(null, 23899);
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("testObject.testString", map) == null;
+            assertNull(getNestedReplacement(VarStatement.create("testObject.testString"), map));
         }
 
         @Test
-        void private_var() throws NoSuchFieldException, IllegalAccessException, ArgumentValueNullException {
+        void private_var() throws InterpretationException, TemplateSyntaxException {
             class PrivateClass {
                 private final String testString;
                 final int testInteger;
@@ -182,19 +187,18 @@ public class TemplateInterpreterTest {
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
-            assert getNestedReplacement("testObject.testString", map).equals("testString");
+            assertEquals("testString", getNestedReplacement(VarStatement.create("testObject.testString"), map));
         }
 
         @Test
-        void missing_field() throws IllegalAccessException, ArgumentValueNullException {
+        void missing_field() throws InterpretationException, TemplateSyntaxException {
             TestClass testClass = new TestClass("testString", 23899);
             HashMap<String, Object> map = new HashMap<>();
             map.put("testObject", testClass);
             map.put("dummyVar", "testing String");
             try {
-                getNestedReplacement("testObject.testBoolean", map);
-            } catch (NoSuchFieldException _) {
-            }
+                getNestedReplacement(VarStatement.create("testObject.testBoolean"), map);
+            } catch (FieldDoesNotExistException _) {}
         }
     }
 }

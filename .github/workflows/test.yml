@@ -1,6 +1,6 @@
-name: Build on Push
+name: Test
 
-on: push
+on: pull_request
 
 jobs:
   build:
@@ -16,6 +16,11 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots clean compile
+        working-directory: bot
+        env:
+          JAVA_TOOL_OPTIONS: --enable-preview
+      - name: Run all Tests
+        run: mvn test
         working-directory: bot
         env:
           JAVA_TOOL_OPTIONS: --enable-preview

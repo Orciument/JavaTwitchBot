@@ -4,11 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import talium.system.twitchCommands.persistence.MessagePattern;
 import talium.system.twitchCommands.persistence.TriggerEntity;
-import talium.system.twitchCommands.cooldown.ChatCooldown;
 import talium.system.twitchCommands.persistence.TriggerService;
-import talium.inputs.Twitch4J.ChatMessage;
-import talium.system.twitchCommands.cooldown.CooldownType;
-import talium.inputs.Twitch4J.TwitchUserPermission;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,22 +75,6 @@ public class TriggerProvider {
     }
 
     /**
-     * Replaces a trigger with the same triggerId of the new trigger, with the new trigger instance.
-     * Used for updates to triggers to edits in the ui
-     * @param newTrigger replacement trigger
-     * @param callback replacement callback
-     */
-    public static void updateTrigger(TriggerEntity newTrigger, TriggerCallback callback) {
-        for (RuntimeTrigger trigger : triggers) {
-            if (trigger.id().equals(newTrigger.id)) {
-                triggers.remove(trigger);
-                triggers.add(transformTrigger(newTrigger, callback));
-                return;
-            }
-        }
-    }
-
-    /**
      * Transforms a Chattrigger into a runtime Trigger for internal use of the triggerEngine.
      *
      * @apiNote Discards all disabled patterns
@@ -125,23 +105,20 @@ public class TriggerProvider {
     }
 
     /**
-     * Add the commands are specified in the InputConfiguration to an internal list to use while building the final cache of commands.
-     * @param commands list of commands to add
-     * @implNote Only to be used by the InputManager
+     * Add the command to an internal list to use while building the final cache of commands.
+     * @param command command
      */
-    public static void addCommandsFromCodeConfig(List<RuntimeTrigger> commands) {
-        for (RuntimeTrigger command : commands) {
-            codeTriggerMap.put(command.id(), command);
-            if (triggerService.existsById(command.id())) {
-                continue;
-            }
-            var patterns = command.patterns().stream().map(pattern -> new MessagePattern(pattern.pattern(), true, false, true)).toList();
-            TriggerEntity entity = new TriggerEntity(command.id(), "", patterns, command.permission(), command.userCooldown(), command.globalCooldown(), true, null);
-            try {
-                triggerService.save(entity);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public static void addCommandRegistration(RuntimeTrigger command) {
+        codeTriggerMap.put(command.id(), command);
+        if (triggerService.existsById(command.id())) {
+            return;
+        }
+        var patterns = command.patterns().stream().map(pattern -> new MessagePattern(pattern.pattern(), true, false, true)).toList();
+        TriggerEntity entity = new TriggerEntity(command.id(), "", patterns, command.permission(), command.userCooldown(), command.globalCooldown(), true, null);
+        try {
+            triggerService.save(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

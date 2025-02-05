@@ -40,6 +40,11 @@ public class WatchtimeUpdateService {
         CHATTER_UPDATE_SERVICE.scheduleAtFixedRate(WatchtimeUpdateService::update, 1, POLLING_INTERVAL_SECONDS, TimeUnit.SECONDS);
     }
 
+    public static void init() {
+        //noop to load class
+        //initialization is done via static initialization because we don't need anything from the outside environment, and then we can assume that they are always there
+    }
+
     private static List<String> getUserList() {
         return TwitchApi.getUserList().stream().map(Chatter::getUserId).toList();
     }
