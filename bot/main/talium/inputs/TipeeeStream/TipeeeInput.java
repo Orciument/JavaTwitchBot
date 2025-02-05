@@ -4,6 +4,8 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.engineio.client.EngineIOException;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.web.util.UriComponentsBuilder;
 import talium.Registrar;
 import talium.TwitchBot;
 import talium.system.inputSystem.BotInput;
@@ -16,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -26,6 +27,10 @@ import java.util.Arrays;
 public class TipeeeInput implements BotInput {
 
     public static class TipeeeStreamException extends Exception {
+        public TipeeeStreamException(String message) {
+            super(message);
+        }
+
         public TipeeeStreamException(String message, Throwable cause) {
             super(message, cause);
         }
@@ -36,6 +41,10 @@ public class TipeeeInput implements BotInput {
         }
     }
     public static class SocketInfoEndpointException extends TipeeeStreamException {
+        public SocketInfoEndpointException(String message) {
+            super(message);
+        }
+
         public SocketInfoEndpointException(String message, Throwable cause) {
             super(message, cause);
         }
@@ -43,7 +52,7 @@ public class TipeeeInput implements BotInput {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TipeeeInput.class);
     private Socket socket;
-    private TipeeeConfig config;
+    private final TipeeeConfig config;
 
     public TipeeeInput(TipeeeConfig config) {
         this.config = config;
@@ -67,20 +76,18 @@ public class TipeeeInput implements BotInput {
         }
         HealthManager.reportStatus(TipeeeInput.class, InputStatus.STARTING);
         LOGGER.info("Stating TipeeeInput for Channel {}", config.channelName());
-        if (!config.hasSocketUrl()) {
-            LOGGER.info("Getting current Tipeee Socket.io url...");
-            try {
-                String socketUrlFromUrl = getSocketUrlFromUrl(config.tipeeeSocketInfoUrl());
-                config = new TipeeeConfig(config, STR."\{socketUrlFromUrl}?access_token=");
-            } catch (SocketInfoEndpointException e) {
-                throw new NoValidSocketUrl("Could not get up-to-date socket url from url Info endpoint", e);
-            }
-        }
 
         URI socketUrl;
         try {
-            socketUrl = new URI(config.socketUrl().get() + config.apiKey());
-        } catch (URISyntaxException e) {
+        if (config.hasSocketUrl()) {
+            socketUrl = URI.create(config.socketUrl().get());
+        } else {
+            LOGGER.info("Getting current Tipeee Socket.io url...");
+
+            var info_response = getSocketUrlFromUrl(config.tipeeeSocketInfoUrl());
+            socketUrl = parseSocketInfoUrlResponse(info_response, config.apiKey());
+        }
+        } catch (SocketInfoEndpointException | IllegalArgumentException e) {
             HealthManager.reportStatus(TipeeeInput.class, InputStatus.DEAD);
             throw new NoValidSocketUrl("Could not build valid socket Url: ", e);
         }
@@ -121,19 +128,31 @@ public class TipeeeInput implements BotInput {
         LOGGER.info("Tipeee socket connected");
     }
 
-    private String getSocketUrlFromUrl(String socketInfoUrl) throws SocketInfoEndpointException {
+    static String getSocketUrlFromUrl(String socketInfoUrl) throws SocketInfoEndpointException {
         try {
             var client = HttpClient.newBuilder().build();
             var request = HttpRequest.newBuilder(URI.create(socketInfoUrl)).GET().build();
             var httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (httpResponse.statusCode() != 200) {
+                throw new SocketInfoEndpointException("Info endpoint responded with response code: " + httpResponse.statusCode());
+            }
             client.close();
-            var d = new JSONObject(httpResponse.body()).getJSONObject("datas");
-            return STR."\{d.getString("host")}:\{d.getString("port")}";
+            return httpResponse.body();
         } catch (IOException | InterruptedException e) {
             throw new SocketInfoEndpointException("Error while requesting tipeeeStream socket url!", e);
-        } catch (JSONException e) {
-            throw new SocketInfoEndpointException("TipeeeStream socket info Url responded with unknown format!", e);
         }
     }
 
+    static @NotNull URI parseSocketInfoUrlResponse(String body, String apiKey) throws SocketInfoEndpointException {
+        try {
+            var datas = new JSONObject(body).getJSONObject("datas");
+            return UriComponentsBuilder.fromHttpUrl(datas.getString("host"))
+                    .queryParam("access_token", apiKey)
+                    .build().toUri();
+        } catch (JSONException e) {
+            throw new SocketInfoEndpointException("TipeeeStream socket info Url responded with unknown format!", e);
+        } catch (IllegalArgumentException e) {
+            throw new SocketInfoEndpointException("Returned Host ist not a valid URL!", e);
+        }
+    }
 }
