@@ -2,6 +2,7 @@ package talium;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.persistence.PreRemove;
+import talium.inputs.TipeeeStream.DonationRepo;
 import talium.inputs.TipeeeStream.TipeeeConfig;
 import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
@@ -41,7 +42,7 @@ public class TwitchBot {
         System.out.println("-----------------|-----|-[-------------]---------------------------------------------------------------------------------------------------------------------------------------------");
 
         twitch = startInput(new Twitch4JInput());
-        tipeee = startInput(new TipeeeInput(ctx.getBean(TipeeeConfig.class)));
+        tipeee = startInput(new TipeeeInput(ctx.getBean(TipeeeConfig.class), ctx.getBean(DonationRepo.class)));
 
         logger.info("Inputs started, initializing other system components...");
         // This section is used to pass the execution/control to different parts of the bot to do some initialisation
