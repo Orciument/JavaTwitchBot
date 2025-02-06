@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import talium.inputs.Twitch4J.TwitchApi;
+import talium.system.Out;
 import talium.system.coinsWatchtime.chatter.ChatterService;
 
 import java.util.List;
@@ -37,16 +37,15 @@ public class WatchtimeUpdateService {
     static {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("CHATTER_UPDATE_EXECUTOR").build();
         CHATTER_UPDATE_SERVICE = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
-        CHATTER_UPDATE_SERVICE.scheduleAtFixedRate(WatchtimeUpdateService::update, 1, POLLING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+
     }
 
     public static void init() {
-        //noop to load class
-        //initialization is done via static initialization because we don't need anything from the outside environment, and then we can assume that they are always there
+        CHATTER_UPDATE_SERVICE.scheduleAtFixedRate(WatchtimeUpdateService::update, 1, POLLING_INTERVAL_SECONDS, TimeUnit.SECONDS);
     }
 
     private static List<String> getUserList() {
-        return TwitchApi.getUserList().stream().map(Chatter::getUserId).toList();
+        return Out.Twitch.api.getUserList().stream().map(Chatter::getUserId).toList();
     }
 
     /**
@@ -64,7 +63,7 @@ public class WatchtimeUpdateService {
         // catch because otherwise the scheduler would end on any runtime error
         try {
             logger.info("Refreshing user list");
-            if (!TwitchApi.isOnline()) {
+            if (!Out.Twitch.api.isOnline()) {
                 logger.debug("Channel online: false");
                 return;
             }

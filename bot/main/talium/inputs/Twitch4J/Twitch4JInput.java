@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import talium.Registrar;
 import talium.inputs.shared.oauth.OAuthEndpoint;
 import talium.inputs.shared.oauth.OauthAccount;
+import talium.system.Out;
 import talium.system.eventSystem.EventDispatcher;
 import talium.system.eventSystem.Subscriber;
 import talium.system.inputSystem.BotInput;
@@ -130,6 +131,7 @@ public class Twitch4JInput implements BotInput {
                 .getId();
         logger.debug("Start successful!");
         HealthManager.reportStatus(Twitch4JInput.class, InputStatus.HEALTHY);
+        Out.Twitch.api = new TwitchApiImpl(helix, chat);
     }
 
     @Override

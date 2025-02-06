@@ -2,7 +2,7 @@ package talium.system.security.auth;
 
 import com.google.gson.Gson;
 import org.springframework.http.ResponseEntity;
-import talium.inputs.Twitch4J.TwitchApi;
+import talium.system.Out;
 import talium.system.security.auth.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ public class AuthController {
     String getAllPanelAccounts() {
         List<PanelUserDTO> list = new ArrayList<>();
         for (PanelUser p : panelUserRepo.findAll()) {
-            var user = TwitchApi.getUserById(p.twitchUserId);
+            var user = Out.Twitch.api.getUserById(p.twitchUserId);
             String userName = null;
             if (user.isPresent()) {
                 userName = user.get().getDisplayName();
@@ -39,7 +39,7 @@ public class AuthController {
 
     @PostMapping("/panelAccounts")
     HttpStatus addNewPanelAccount(@RequestBody String userName) {
-        var userId = TwitchApi.getUserByName(userName);
+        var userId = Out.Twitch.api.getUserByName(userName);
         if (userId.isEmpty()) return HttpStatus.NOT_FOUND;
         panelUserRepo.save(new PanelUser(userId.get().getId()));
         return HttpStatus.CREATED;
