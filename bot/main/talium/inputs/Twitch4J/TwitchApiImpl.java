@@ -6,13 +6,18 @@ import com.github.twitch4j.common.exception.UnauthorizedException;
 import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.Chatter;
 import com.github.twitch4j.helix.domain.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import talium.TwitchBot;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 // maybe add no-op version of helix api and just switch them when they are assigned, that way we should be able to remove all these null checking methods
 public class TwitchApiImpl implements TwitchApi {
+
+    private static final Logger logger = LoggerFactory.getLogger(TwitchApiImpl.class);
+
     TwitchHelix helix;
     TwitchChat chat;
 
@@ -30,7 +35,13 @@ public class TwitchApiImpl implements TwitchApi {
         try {
             return call.call(Twitch4JInput.helix);
         }  catch (UnauthorizedException e) {
-            //fix handle missing auth
+            logger.warn("Twitch Credentials invalid, trying to reconnect to twitch!");
+            var success = TwitchBot.reconnectTwitch();
+            if (!success) {
+                logger.error("Failed to reconnect twitch!");
+                //TODO make this checked exception, with cause from reconnectTwitch() from TwitchInput.startup()
+                throw new RuntimeException("Failed to reconnect to twitch!");
+            }
             return call.call(Twitch4JInput.helix);
         } catch (Exception e) {
             // ehh, log and throw i guess
@@ -55,19 +66,19 @@ public class TwitchApiImpl implements TwitchApi {
 
     @Override
     public Optional<User> getUserById(String userId) {
-        var user =Twitch4JInput.helix.getUsers(null, List.of(userId), null).execute().getUsers();
+        var user = doHelixCall(h -> h.getUsers(null, List.of(userId), null).execute().getUsers());
         if (user.isEmpty()) return Optional.empty();
         return Optional.ofNullable(user.getFirst());
     }
 
     @Override
     public List<User> getUserById(List<String> userId) {
-        return Twitch4JInput.helix.getUsers(null, userId, null).execute().getUsers();
+        return doHelixCall(h -> h.getUsers(null, userId, null).execute().getUsers());
     }
 
     @Override
     public Optional<User> getUserByName(String username) {
-        var user = Twitch4JInput.helix.getUsers(null, null, List.of(username)).execute().getUsers();
+        var user = doHelixCall(h -> h.getUsers(null, null, List.of(username)).execute().getUsers());
         if (user.isEmpty()) return Optional.empty();
         return Optional.ofNullable(user.getFirst());
     }
@@ -75,16 +86,16 @@ public class TwitchApiImpl implements TwitchApi {
     @Override
     public List<Chatter> getUserList() {
         OAuth2Credential cred = Twitch4JInput.oAuth2Credential;
-        return Twitch4JInput.helix
+        return doHelixCall(h -> h
                 .getChatters(cred.getAccessToken(), cred.getUserId(), cred.getUserId(), 1000, null)
                 .execute()
-                .getChatters();
+                .getChatters());
     }
 
     @Override
     public boolean isOnline() {
         OAuth2Credential cred = Twitch4JInput.oAuth2Credential;
-        return Twitch4JInput.helix.getStreams(cred.getAccessToken(), null, null, null, null, null, null, null).execute().getStreams().size() == 1;
+        return doHelixCall(h -> h.getStreams(cred.getAccessToken(), null, null, null, null, null, null, null).execute().getStreams()).size() == 1;
     }
 
 }

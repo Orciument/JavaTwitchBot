@@ -88,4 +88,17 @@ public class TwitchBot {
             HealthManager.reportStatus(input.getClass(), InputStatus.DEAD);
         }
     }
+
+    public static boolean reconnectTwitch() {
+        twitch.shutdown();
+        var twitch = new Twitch4JInput();
+        try {
+            twitch.startup();
+            TwitchBot.twitch = twitch;
+            return true;
+        } catch (Exception e) {
+            TwitchBot.twitch = twitch;
+            return false;
+        }
+    }
 }
