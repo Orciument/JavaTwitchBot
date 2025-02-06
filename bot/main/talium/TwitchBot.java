@@ -40,9 +40,14 @@ public class TwitchBot {
         System.out.println("DateFormat: DayNumber-Hour:Minute:Second:Millis");
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
         System.out.println("-----------------|-----|-[-------------]---------------------------------------------------------------------------------------------------------------------------------------------");
+        var serverPort = ctx.getEnvironment().getProperty("server.port");
+        logger.info("Server started on Port: {}", serverPort);
 
         twitch = startInput(new Twitch4JInput());
-        tipeee = startInput(new TipeeeInput(ctx.getBean(TipeeeConfig.class), ctx.getBean(DonationRepo.class)));
+        tipeee = startInput(new TipeeeInput(
+                ctx.getBean(TipeeeConfig.class),
+                ctx.getBean(DonationRepo.class))
+        );
 
         logger.info("Inputs started, initializing other system components...");
         // This section is used to pass the execution/control to different parts of the bot to do some initialisation

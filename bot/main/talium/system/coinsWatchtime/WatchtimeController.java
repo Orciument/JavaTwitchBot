@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import talium.inputs.Twitch4J.TwitchApi;
+import talium.system.Out;
 import talium.system.coinsWatchtime.chatter.Chatter;
 import talium.system.coinsWatchtime.chatter.ChatterDTO;
 import talium.system.coinsWatchtime.chatter.ChatterService;
@@ -38,7 +38,7 @@ public class WatchtimeController {
         var dto = new ArrayList<LeaderboardDTO>();
         var userIdList = chatters.stream().map(chatter -> chatter.twitchUserId).toList();
 //        t.step("TRANSFORM LIST");
-        var twitchUserList = TwitchApi.getUserById(userIdList);
+        var twitchUserList = Out.Twitch.api.getUserById(userIdList);
 //        t.step("TWITCH API");
 
         Map<String, String> usernameMap = new TreeMap<>();
@@ -64,7 +64,7 @@ public class WatchtimeController {
 
     @GetMapping("/username/{username}")
     ResponseEntity<String> getForUsername(@PathVariable String username) {
-        var twitchUser = TwitchApi.getUserByName(username);
+        var twitchUser = Out.Twitch.api.getUserByName(username);
         if (twitchUser.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

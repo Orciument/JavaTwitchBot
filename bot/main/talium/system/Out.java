@@ -1,7 +1,9 @@
 package talium.system;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import talium.inputs.Twitch4J.TwitchAPINoop;
 import talium.inputs.Twitch4J.TwitchApi;
 import talium.system.stringTemplates.Template;
 import talium.system.stringTemplates.TemplateService;
@@ -28,8 +30,11 @@ public class Out {
 
     public static class Twitch {
 
+        @NonNull
+        public static TwitchApi api = new TwitchAPINoop();
+
         public static void sendRawMessage(String message) {
-            TwitchApi.sendMessage(message);
+            api.sendMessage(message);
         }
 
         public static String sendNamedTemplate(String id, HashMap<String, Object> baseValues) throws NoSuchElementException {
@@ -59,7 +64,7 @@ public class Out {
                 // the exceptions should be displayed in the console and in the webconsole with a fairly high priority
                 throw new RuntimeException(e);
             }
-            TwitchApi.sendMessage(message);
+            api.sendMessage(message);
             return message;
         }
     }

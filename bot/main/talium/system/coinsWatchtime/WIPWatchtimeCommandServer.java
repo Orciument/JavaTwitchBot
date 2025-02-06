@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import talium.Registrar;
 import talium.inputs.Twitch4J.ChatMessage;
-import talium.inputs.Twitch4J.TwitchApi;
 import talium.system.Out;
 import talium.system.coinsWatchtime.chatter.Chatter;
 import talium.system.coinsWatchtime.chatter.ChatterService;
@@ -55,27 +54,15 @@ public class WIPWatchtimeCommandServer {
 
     public static void triggerGetWatchtime(String triggerId, ChatMessage message) {
         var values = new HashMap<String, Object>();
-        var userId = message.user().id();
-        var twitchUser = TwitchApi.getUserById(userId);
-        if (twitchUser.isEmpty()) {
-            logger.warn("Could not get watchtime, no twitch user found for Id: {}", userId);
-            return;
-        }
-        var wt = chatterService.getDataForChatter(userId);
-        values.put("wt", new WatchtimeContext(wt, twitchUser.get().getDisplayName()));
+        var wt = chatterService.getDataForChatter(message.user().id());
+        values.put("wt", new WatchtimeContext(wt, message.user().name()));
         Out.Twitch.sendNamedTemplate("coins.watchtime", values);
     }
 
     public static void triggerGetCoins(String triggerId, ChatMessage message) {
         var values = new HashMap<String, Object>();
-        var userId = message.user().id();
-        var twitchUser = TwitchApi.getUserById(userId);
-        if (twitchUser.isEmpty()) {
-            logger.warn("Could not get watchtime, no twitch user found for Id: {}", userId);
-            return;
-        }
-        var wt = chatterService.getDataForChatter(userId);
-        values.put("wt", new WatchtimeContext(wt, twitchUser.get().getDisplayName()));
+        var wt = chatterService.getDataForChatter(message.user().id());
+        values.put("wt", new WatchtimeContext(wt, message.user().name()));
         Out.Twitch.sendNamedTemplate("coins.coins", values);
     }
 }
