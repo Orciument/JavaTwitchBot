@@ -2,10 +2,12 @@ package talium;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.persistence.PreRemove;
+import org.springframework.context.ConfigurableApplicationContext;
 import talium.inputs.TipeeeStream.DonationRepo;
 import talium.inputs.TipeeeStream.TipeeeConfig;
 import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
+import talium.inputs.Twitch4J.TwitchConfig;
 import talium.system.StopWatch;
 import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
 import talium.system.coinsWatchtime.WatchtimeUpdateService;
@@ -30,12 +32,13 @@ public class TwitchBot {
         startup();
     }
 
+    private static ConfigurableApplicationContext ctx;
     private static BotInput twitch;
     private static BotInput tipeee;
 
     public static void startup() {
         StopWatch time = new StopWatch(StopWatch.TYPE.STARTUP);
-        var ctx = SpringApplication.run(TwitchBot.class);
+        ctx = SpringApplication.run(TwitchBot.class);
         System.out.println();
         System.out.println("DateFormat: DayNumber-Hour:Minute:Second:Millis");
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
@@ -43,7 +46,9 @@ public class TwitchBot {
         var serverPort = ctx.getEnvironment().getProperty("server.port");
         logger.info("Server started on Port: {}", serverPort);
 
-        twitch = startInput(new Twitch4JInput());
+        twitch = startInput(new Twitch4JInput(
+                ctx.getBean(TwitchConfig.class)
+        ));
         tipeee = startInput(new TipeeeInput(
                 ctx.getBean(TipeeeConfig.class),
                 ctx.getBean(DonationRepo.class))
@@ -91,7 +96,9 @@ public class TwitchBot {
 
     public static boolean reconnectTwitch() {
         twitch.shutdown();
-        var twitch = new Twitch4JInput();
+        var twitch = new Twitch4JInput(
+                ctx.getBean(TwitchConfig.class)
+        );
         try {
             twitch.startup();
             TwitchBot.twitch = twitch;

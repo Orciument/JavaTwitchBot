@@ -20,10 +20,12 @@ public class TwitchApiImpl implements TwitchApi {
 
     TwitchHelix helix;
     TwitchChat chat;
+    String sendToChannel;
 
-    public TwitchApiImpl(TwitchHelix helix, TwitchChat chat) {
+    public TwitchApiImpl(TwitchHelix helix, TwitchChat chat, String sendToChannel) {
         this.helix = helix;
         this.chat = chat;
+        this.sendToChannel = sendToChannel;
     }
 
     // wip: use higher-order-function to reduce boilerplate
@@ -61,7 +63,7 @@ public class TwitchApiImpl implements TwitchApi {
      */
     @Override
     public void sendMessage(String message) {
-        Twitch4JInput.chat.sendMessage(Twitch4JInput.sendTo, message);
+        chat.sendMessage(sendToChannel, message);
     }
 
     @Override
