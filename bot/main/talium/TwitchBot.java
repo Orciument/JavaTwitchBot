@@ -8,9 +8,11 @@ import talium.inputs.TipeeeStream.TipeeeConfig;
 import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.inputs.Twitch4J.TwitchConfig;
+import talium.inputs.shared.oauth.OauthAccountRepo;
 import talium.system.StopWatch;
 import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
 import talium.system.coinsWatchtime.WatchtimeUpdateService;
+import talium.system.coinsWatchtime.chatter.ChatterService;
 import talium.system.inputSystem.BotInput;
 import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.InputStatus;
@@ -39,6 +41,7 @@ public class TwitchBot {
     public static void startup() {
         StopWatch time = new StopWatch(StopWatch.TYPE.STARTUP);
         ctx = SpringApplication.run(TwitchBot.class);
+
         System.out.println();
         System.out.println("DateFormat: DayNumber-Hour:Minute:Second:Millis");
         System.out.println("DDD-HH:mm:ss.SSS |LEVEL| [THREAD]        LOGGER (Source Class)               - MSG");
@@ -46,18 +49,19 @@ public class TwitchBot {
         var serverPort = ctx.getEnvironment().getProperty("server.port");
         logger.info("Server started on Port: {}", serverPort);
 
+        // Start initializing system components, the order of operations is very important!
         twitch = startInput(new Twitch4JInput(
-                ctx.getBean(TwitchConfig.class)
+                ctx.getBean(TwitchConfig.class),
+                ctx.getBean(OauthAccountRepo.class)
         ));
         tipeee = startInput(new TipeeeInput(
                 ctx.getBean(TipeeeConfig.class),
                 ctx.getBean(DonationRepo.class))
         );
 
-        logger.info("Inputs started, initializing other system components...");
         // This section is used to pass the execution/control to different parts of the bot to do some initialisation
-        WatchtimeUpdateService.init();
-        WIPWatchtimeCommandServer.init();
+        WatchtimeUpdateService.init(ctx.getBean(ChatterService.class));
+        WIPWatchtimeCommandServer.init(ctx.getBean(ChatterService.class));
 
         TriggerProvider.rebuildTriggerCache();
         //TODO remove all templates that were once registered automatically, but are no longer
@@ -97,7 +101,8 @@ public class TwitchBot {
     public static boolean reconnectTwitch() {
         twitch.shutdown();
         var twitch = new Twitch4JInput(
-                ctx.getBean(TwitchConfig.class)
+                ctx.getBean(TwitchConfig.class),
+                ctx.getBean(OauthAccountRepo.class)
         );
         try {
             twitch.startup();

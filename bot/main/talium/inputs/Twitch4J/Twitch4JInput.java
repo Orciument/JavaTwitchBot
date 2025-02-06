@@ -13,6 +13,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import talium.Registrar;
 import talium.inputs.shared.oauth.OAuthEndpoint;
 import talium.inputs.shared.oauth.OauthAccount;
+import talium.inputs.shared.oauth.OauthAccountRepo;
 import talium.system.Out;
 import talium.system.eventSystem.EventDispatcher;
 import talium.system.eventSystem.Subscriber;
@@ -33,6 +34,7 @@ public class Twitch4JInput implements BotInput {
     private static final Logger logger = LoggerFactory.getLogger(Twitch4JInput.class);
 
     private TwitchConfig config;
+    private OauthAccountRepo oauthRepo;
 
     protected static volatile TwitchChat chat;
     protected static volatile TwitchHelix helix;
@@ -42,8 +44,9 @@ public class Twitch4JInput implements BotInput {
 
     protected static String broadCasterChannelId;
 
-    public Twitch4JInput(TwitchConfig config) {
+    public Twitch4JInput(TwitchConfig config, OauthAccountRepo oauthRepo) {
         this.config = config;
+        this.oauthRepo = oauthRepo;
     }
 
 
@@ -112,7 +115,7 @@ public class Twitch4JInput implements BotInput {
     public void shutdown() {
         if (oAuth2Credential != null) {
             OauthAccount account = new OauthAccount(config.chatAccountName(), "twitch", oAuth2Credential.getRefreshToken());
-            OauthAccount.repo.save(account);
+            oauthRepo.save(account);
         }
         if (twitchClient != null) {
             twitchClient.close();
@@ -121,7 +124,7 @@ public class Twitch4JInput implements BotInput {
     }
 
     private Optional<OAuth2Credential> getRefreshedOauthFromDB(TwitchIdentityProvider iProvider) {
-        Optional<OauthAccount> dbCreds = OauthAccount.repo.getByAccNameAndService(config.chatAccountName(), "twitch");
+        Optional<OauthAccount> dbCreds = oauthRepo.getByAccNameAndService(config.chatAccountName(), "twitch");
         if (dbCreds.isEmpty()) {
             return Optional.empty();
         }
