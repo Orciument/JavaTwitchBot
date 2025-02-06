@@ -10,7 +10,6 @@ import com.github.twitch4j.chat.events.TwitchEvent;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.helix.TwitchHelix;
 import org.apache.commons.lang.RandomStringUtils;
-import org.springframework.stereotype.Component;
 import talium.Registrar;
 import talium.inputs.shared.oauth.OAuthEndpoint;
 import talium.inputs.shared.oauth.OauthAccount;
@@ -22,7 +21,6 @@ import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.InputStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,40 +28,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 public class Twitch4JInput implements BotInput {
-    protected static String channelName;
-    protected static String chatAccountName;
-    protected static String sendTo;
-    private static String app_clientID;
-    private static String app_clientSecret;
-
-    @Value("${twitchChannelName}")
-    public void setChannelName(String channelName) {
-        Twitch4JInput.channelName = channelName;
-    }
-
-    @Value("${twitchBotAccountName:}")
-    public void setChatAccountName(String chatAccountName) {
-        Twitch4JInput.chatAccountName = chatAccountName;
-    }
-
-    @Value("${twitchOutputToChannel:}")
-    public void setSendTo(String sendTo) {
-        Twitch4JInput.sendTo = sendTo;
-    }
-
-    @Value("${twitchAppId}")
-    public void setApp_clientID(String app_clientID) {
-        Twitch4JInput.app_clientID = app_clientID;
-    }
-
-    @Value("${twitchAppSecret}")
-    public void setApp_clientSecret(String app_clientSecret) {
-        Twitch4JInput.app_clientSecret = app_clientSecret;
-    }
 
     private static final Logger logger = LoggerFactory.getLogger(Twitch4JInput.class);
+
+    private TwitchConfig config;
 
     protected static volatile TwitchChat chat;
     protected static volatile TwitchHelix helix;
@@ -73,23 +42,28 @@ public class Twitch4JInput implements BotInput {
 
     protected static String broadCasterChannelId;
 
+    public Twitch4JInput(TwitchConfig config) {
+        this.config = config;
+    }
+
+
     @Override
     public void startup() {
         logger.debug("Starting... ");
         Registrar.registerHealthDescription(Twitch4JInput.class, "Twitch4JInput", "");
         HealthManager.reportStatus(Twitch4JInput.class, InputStatus.STARTING);
-        if (chatAccountName == null || chatAccountName.isEmpty()) {
-            logger.warn("Using twitchChannelName as botAccountName: {}", channelName);
+        if (!config.hasChannelName()) {
+            logger.warn("Using twitchChannelName as botAccountName: {}", config.channelName());
             logger.warn("Consider setting the botAccountName explicitly to avoid accidental misconfiguration.");
-            chatAccountName = channelName;
+            config = config.setAccountName(config.channelName());
         }
-        if (sendTo == null || sendTo.isEmpty()) {
-            logger.warn("Using twitchChannelName as twitchOutputToChannel: {}", channelName);
+        if (!config.hasSendTo()) {
+            logger.warn("Using twitchChannelName as twitchOutputToChannel: {}", config.channelName());
             logger.warn("Consider setting the twitchOutputToChannel explicitly to avoid accidental misconfiguration.");
-            sendTo = channelName;
+            config = config.setSendTo(config.channelName());
         }
 
-        iProvider = new TwitchIdentityProvider(app_clientID, app_clientSecret, OAuthEndpoint.getRedirectUrl("twitch"));
+        iProvider = new TwitchIdentityProvider(config.app_clientID(), config.app_clientSecret(), OAuthEndpoint.getRedirectUrl("twitch"));
 
         var creds = getRefreshedOauthFromDB(iProvider);
         if (creds.isEmpty()) {
@@ -116,28 +90,28 @@ public class Twitch4JInput implements BotInput {
                 .withChatAccount(oAuth2Credential)
                 .withDefaultEventHandler(SimpleEventHandler.class)
                 .build();
-        twitchClient.getClientHelper().enableStreamEventListener(channelName);
-        twitchClient.getChat().joinChannel(channelName);
+        twitchClient.getClientHelper().enableStreamEventListener(config.channelName());
+        twitchClient.getChat().joinChannel(config.channelName());
         twitchClient.getEventManager().onEvent(TwitchEvent.class, EventDispatcher::dispatch);
 
         this.twitchClient = twitchClient;
         chat = twitchClient.getChat();
         helix = twitchClient.getHelix();
         broadCasterChannelId = helix
-                .getUsers(null, null, List.of(channelName))
+                .getUsers(null, null, List.of(config.channelName()))
                 .execute()
                 .getUsers()
                 .getFirst()
                 .getId();
         logger.debug("Start successful!");
         HealthManager.reportStatus(Twitch4JInput.class, InputStatus.HEALTHY);
-        Out.Twitch.api = new TwitchApiImpl(helix, chat);
+        Out.Twitch.api = new TwitchApiImpl(helix, chat, config.sendTo());
     }
 
     @Override
     public void shutdown() {
         if (oAuth2Credential != null) {
-            OauthAccount account = new OauthAccount(chatAccountName, "twitch", oAuth2Credential.getRefreshToken());
+            OauthAccount account = new OauthAccount(config.chatAccountName(), "twitch", oAuth2Credential.getRefreshToken());
             OauthAccount.repo.save(account);
         }
         if (twitchClient != null) {
@@ -147,7 +121,7 @@ public class Twitch4JInput implements BotInput {
     }
 
     private Optional<OAuth2Credential> getRefreshedOauthFromDB(TwitchIdentityProvider iProvider) {
-        Optional<OauthAccount> dbCreds = OauthAccount.repo.getByAccNameAndService(chatAccountName, "twitch");
+        Optional<OauthAccount> dbCreds = OauthAccount.repo.getByAccNameAndService(config.chatAccountName(), "twitch");
         if (dbCreds.isEmpty()) {
             return Optional.empty();
         }
@@ -177,12 +151,12 @@ public class Twitch4JInput implements BotInput {
         String auth_url = String.format("%s?response_type=%s&client_id=%s&redirect_uri=%s&scope=%s&state=%s",
                 authorizationServer,
                 "code",
-                app_clientID,
+                config.app_clientID(),
                 OAuthEndpoint.getRedirectUrl("twitch"),
                 String.join(" ", scopes),
                 state
         );
-        Optional<String> code = OAuthEndpoint.newAuthRequest(chatAccountName, "twitch", auth_url, state);
+        Optional<String> code = OAuthEndpoint.newAuthRequest(config.chatAccountName(), "twitch", auth_url, state);
         return code.map(s -> iProvider.getCredentialByCode(s));
     }
 
