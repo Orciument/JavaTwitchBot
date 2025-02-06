@@ -4,8 +4,6 @@ import com.github.twitch4j.helix.domain.Chatter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import talium.system.Out;
 import talium.system.coinsWatchtime.chatter.ChatterService;
 
@@ -18,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Requests the twitch user list (list of active chatters) and adds the gained watchtime and coins for all users.
  */
-@Component
 public class WatchtimeUpdateService {
     private static final Logger logger = LoggerFactory.getLogger(WatchtimeUpdateService.class);
 
@@ -29,19 +26,15 @@ public class WatchtimeUpdateService {
     private static final int COIN_PAYOUT_INTERVAL_SECONDS = 600;
     private static final int COIN_PAYOUT_AMOUNT = 1;
 
-    @Autowired
-    public void setChatterService(ChatterService chatterService) {
-        WatchtimeUpdateService.chatterService = chatterService;
-    }
-
     static {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("CHATTER_UPDATE_EXECUTOR").build();
         CHATTER_UPDATE_SERVICE = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
 
     }
 
-    public static void init() {
-        CHATTER_UPDATE_SERVICE.scheduleAtFixedRate(WatchtimeUpdateService::update, 1, POLLING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    public static void init(ChatterService chatterService) {
+        WatchtimeUpdateService.chatterService = chatterService;
+        CHATTER_UPDATE_SERVICE.scheduleAtFixedRate(WatchtimeUpdateService::update, 10, POLLING_INTERVAL_SECONDS, TimeUnit.SECONDS);
     }
 
     private static List<String> getUserList() {

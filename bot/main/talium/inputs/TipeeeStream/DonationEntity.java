@@ -2,14 +2,12 @@ package talium.inputs.TipeeeStream;
 
 import jakarta.persistence.*;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.Currency;
 
 @Entity
 @Table(name = "donation_history")
-@Component
 public class DonationEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

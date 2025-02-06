@@ -1,9 +1,5 @@
 package talium.system.coinsWatchtime;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import talium.Registrar;
 import talium.inputs.Twitch4J.ChatMessage;
 import talium.system.Out;
@@ -15,17 +11,11 @@ import java.util.HashMap;
 /**
  * Serves all commands related to watchtime and coins
  */
-@Component
 public class WIPWatchtimeCommandServer {
-    private static final Logger logger = LoggerFactory.getLogger(WIPWatchtimeCommandServer.class);
     private static ChatterService chatterService;
 
-    @Autowired
-    public void setChatterService(ChatterService chatterService) {
+    public static void init(ChatterService chatterService) {
         WIPWatchtimeCommandServer.chatterService = chatterService;
-    }
-
-    public static void init() {
         new Registrar.Command("watchtime.getwatchtime", "!watchtime").registerActionCommand(WIPWatchtimeCommandServer::triggerGetWatchtime);
         new Registrar.Command("watchtime.getCoins", "!coins").registerActionCommand(WIPWatchtimeCommandServer::triggerGetCoins);
         Registrar.registerTemplate("coins.coins", "${wt.username} has ${wt.coins} Coins!");

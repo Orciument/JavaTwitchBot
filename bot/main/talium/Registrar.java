@@ -28,9 +28,6 @@ public class Registrar {
         Registrar.templateService = templateService;
     }
 
-    public Registrar() {
-    }
-
     /// Register Custom HealthUI titel and description
     public static void registerHealthDescription(String self, String title, String description) {
         HealthManager.addCustomization(self, title, description);
