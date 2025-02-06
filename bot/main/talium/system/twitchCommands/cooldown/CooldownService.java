@@ -130,8 +130,8 @@ public class CooldownService {
         if (lastUseInstant == null) {
             return false;
         }
-        var secondsBetween = ChronoUnit.SECONDS.between(message.sendAT(),lastUseInstant);
-        return secondsBetween <= userCooldown.amount;
+        var secondsBetween = ChronoUnit.SECONDS.between(lastUseInstant, message.sendAT());
+        return secondsBetween < userCooldown.amount;
     }
 
     /**
@@ -156,8 +156,8 @@ public class CooldownService {
         if (lastUseInstant == null) {
             return false;
         }
-        var secondsBetween = ChronoUnit.SECONDS.between(message.sendAT(),lastUseInstant);
-        return secondsBetween <= globalCooldown.amount;
+        var secondsBetween = ChronoUnit.SECONDS.between(lastUseInstant, message.sendAT());
+        return secondsBetween < globalCooldown.amount;
     }
 
     /**
