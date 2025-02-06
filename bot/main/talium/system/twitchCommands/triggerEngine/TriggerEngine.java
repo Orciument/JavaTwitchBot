@@ -65,9 +65,12 @@ public class TriggerEngine {
             return;
         }
 
-        var cooldown = inGlobalCooldown(message, trigger.id(), trigger.userCooldown()) || inUserCooldown(message, trigger.id(), trigger.userCooldown());
-        if (cooldown) {
-            logger.debug("Call to command {} from {} rejected because of cooldowns", trigger.id(), message.user().name());
+        if (inGlobalCooldown(message, trigger.id(), trigger.globalCooldown())) {
+            logger.debug("Call to command {} from {} rejected because of global cooldowns", trigger.id(), message.user().name());
+            return;
+        }
+        if (inUserCooldown(message, trigger.id(), trigger.userCooldown())) {
+            logger.debug("Call to command {} from {} rejected because of user cooldowns", trigger.id(), message.user().name());
             return;
         }
         updateCooldownState(message, trigger.id(), trigger.globalCooldown(), trigger.userCooldown());
@@ -80,6 +83,7 @@ public class TriggerEngine {
     }
 
     public static void executeTextCommand(String commandId, ChatMessage message) {
+        logger.debug("Executing text command {}", commandId);
         var template = templateService.getTemplateByCommandId(commandId);
         if (template.isEmpty()) {
             logger.error("Could not find template id for command id {}", commandId);
