@@ -1,9 +1,7 @@
 package talium.twitchCommands.cooldown;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import kotlin.Pair;
-import org.checkerframework.dataflow.qual.Impure;
-import org.checkerframework.dataflow.qual.Pure;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import talium.twitch4J.ChatMessage;
@@ -48,7 +46,7 @@ public class CooldownService {
     private static final Logger log = LoggerFactory.getLogger(CooldownService.class);
 
     static {
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("COOLDOWN_CLEANUP_EXECUTOR").build();
+        ThreadFactory namedThreadFactory = new BasicThreadFactory.Builder().namingPattern("COOLDOWN_CLEANUP_EXECUTOR").build();
         cleanupService = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         cleanupService.scheduleAtFixedRate(CooldownService::cleanupCooldownUser, 0, 30, TimeUnit.MINUTES);
     }
@@ -65,7 +63,6 @@ public class CooldownService {
      * @apiNote <font color="red">This function increases the internal counter of this service!</font> Only call when you get a new Twitch Message from the specific user!
      * @see CooldownService#getMessageUserIndex(TwitchUser)
      */
-    @Impure
     public static int computeMessageUserIndex(TwitchUser user) {
         var mapped = messageIndexes.getOrDefault(user.id(), 0);
         messageIndexes.put(user.id(), mapped + 1);
@@ -77,7 +74,6 @@ public class CooldownService {
      * @param user user from with to get the messageIndex
      * @return messageIndex for most recent message from user
      */
-    @Pure
     public static int getMessageUserIndex(TwitchUser user) {
         return messageIndexes.getOrDefault(user.id(), 0);
     }
@@ -94,7 +90,6 @@ public class CooldownService {
      * @apiNote <font color="red">This function increases the internal counter of this service!</font> Only call when you get a new Twitch chat Message!
      * @see CooldownService#getMessageGlobalIndex()
      */
-    @Impure
     public static int computeMessageGlobalIndex() {
         globalMessageIndex++;
         return globalMessageIndex;
@@ -104,7 +99,6 @@ public class CooldownService {
      * Get the messageGlobalIndex of the most recent message out of all users. Does not increase the underlying counter.
      * @return the messageIndex for the most recent messsage for all users
      */
-    @Pure
     public static int getMessageGlobalIndex() {
         return globalMessageIndex;
     }

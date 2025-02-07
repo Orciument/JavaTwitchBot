@@ -1,7 +1,7 @@
 package talium.coinsWatchtime;
 
 import com.github.twitch4j.helix.domain.Chatter;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import talium.Out;
@@ -27,9 +27,8 @@ public class WatchtimeUpdateService {
     private static final int COIN_PAYOUT_AMOUNT = 1;
 
     static {
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("CHATTER_UPDATE_EXECUTOR").build();
+        ThreadFactory namedThreadFactory = new BasicThreadFactory.Builder().namingPattern("CHATTER_UPDATE_EXECUTOR").build();
         CHATTER_UPDATE_SERVICE = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
-
     }
 
     public static void init(ChatterService chatterService) {
