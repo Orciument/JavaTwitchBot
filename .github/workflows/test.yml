@@ -35,3 +35,5 @@ jobs:
         working-directory: bot
         env:
           JAVA_TOOL_OPTIONS: --enable-preview
+          tipeeeApikey: ${{ secrets.tipeeeApikey }}
+          DOCKER_PASS: ${{ secrets.tipeeeChannel }}
