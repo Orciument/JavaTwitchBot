@@ -1,4 +1,4 @@
-package talium.inputs.shared.oauth;
+package talium.oauthConnector;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.repository.CrudRepository;

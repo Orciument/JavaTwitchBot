@@ -1,4 +1,4 @@
-package talium.inputs.shared.oauth;
+package talium.oauthConnector;
 
 import com.github.philippheuer.credentialmanager.identityprovider.OAuth2IdentityProvider;
 import com.google.gson.Gson;
