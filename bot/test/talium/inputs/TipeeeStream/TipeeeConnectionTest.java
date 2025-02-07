@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import talium.system.inputSystem.HealthManager;
 import talium.system.inputSystem.InputStatus;
 
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
-@TestPropertySource("classpath:/application-test.properties")
+@ActiveProfiles("test")
 public class TipeeeConnectionTest {
     @Autowired
     TipeeeConfig config;

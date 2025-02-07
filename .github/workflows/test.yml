@@ -35,6 +35,3 @@ jobs:
         working-directory: bot
         env:
           JAVA_TOOL_OPTIONS: --enable-preview
-          db_url: localhost:4770/talium
-          db_user: taliumBot
-          db_pass: password
