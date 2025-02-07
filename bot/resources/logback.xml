@@ -1,4 +1,4 @@
-<configuration debug="false">
+<configuration debug="false" scan="true">
     <!-- Stop output INFO at start -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
@@ -18,20 +18,20 @@
     <logger name="talium.TwitchBot" level="INFO" additivity="false">
         <appender-ref ref="SYSTEM"/>
     </logger>
-    <logger name="talium.system.inputSystem.HealthManager" level="INFO" additivity="false">
+    <logger name="talium.inputSystem.HealthManager" level="INFO" additivity="false">
         <appender-ref ref="SYSTEM"/>
     </logger>
-    <logger name="talium.system.StopWatch" level="INFO" additivity="false">
+    <logger name="talium.StopWatch" level="INFO" additivity="false">
         <appender-ref ref="SYSTEM"/>
     </logger>
-    <logger name="talium.system.coinsWatchtime" level="WARN"/>
-    <logger name="talium.system.ASCIIProgressbar" level="INFO"/>
+    <logger name="talium.coinsWatchtime" level="WARN"/>
+    <logger name="talium.ASCIIProgressbar" level="INFO"/>
     <logger name="logback" level="INFO"/>
     <logger name="org.springframework.security.web" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root name="STDOUT" level="WARN">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 
