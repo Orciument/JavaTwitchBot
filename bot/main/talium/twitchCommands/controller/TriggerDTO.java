@@ -1,6 +1,6 @@
 package talium.twitchCommands.controller;
 
-import talium.Twitch4J.TwitchUserPermission;
+import talium.twitch4J.TwitchUserPermission;
 import talium.stringTemplates.TemplateDTO;
 import talium.twitchCommands.cooldown.ChatCooldown;
 
