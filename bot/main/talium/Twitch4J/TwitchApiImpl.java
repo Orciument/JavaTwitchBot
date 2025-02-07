@@ -1,4 +1,4 @@
-package talium.inputs.Twitch4J;
+package talium.Twitch4J;
 
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.chat.TwitchChat;

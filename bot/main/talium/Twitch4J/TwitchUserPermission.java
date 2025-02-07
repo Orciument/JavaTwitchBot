@@ -1,4 +1,4 @@
-package talium.inputs.Twitch4J;
+package talium.Twitch4J;
 
 /**
  * Unser Subset der Twitch4J/Twitch User Permissions/Badges {@link com.github.twitch4j.common.enums.CommandPermission}

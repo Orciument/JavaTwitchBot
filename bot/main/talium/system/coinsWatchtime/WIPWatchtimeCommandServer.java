@@ -1,7 +1,7 @@
 package talium.system.coinsWatchtime;
 
 import talium.Registrar;
-import talium.inputs.Twitch4J.ChatMessage;
+import talium.Twitch4J.ChatMessage;
 import talium.system.Out;
 import talium.system.coinsWatchtime.chatter.Chatter;
 import talium.system.coinsWatchtime.chatter.ChatterService;

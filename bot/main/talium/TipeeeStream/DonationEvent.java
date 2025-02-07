@@ -1,4 +1,4 @@
-package talium.inputs.TipeeeStream;
+package talium.TipeeeStream;
 
 import java.time.ZonedDateTime;
 import java.util.Currency;

@@ -1,12 +1,8 @@
 package talium.system.twitchCommands.controller;
 
-import talium.inputs.Twitch4J.TwitchUserPermission;
+import talium.Twitch4J.TwitchUserPermission;
 import talium.system.stringTemplates.TemplateDTO;
 import talium.system.twitchCommands.cooldown.ChatCooldown;
-import talium.system.twitchCommands.persistence.MessagePattern;
-import talium.system.twitchCommands.persistence.TriggerEntity;
-
-import java.util.List;
 
 public record TriggerDTO(
         String id,

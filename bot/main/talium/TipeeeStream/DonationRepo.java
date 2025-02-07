@@ -1,4 +1,4 @@
-package talium.inputs.TipeeeStream;
+package talium.TipeeeStream;
 
 import org.springframework.data.repository.ListCrudRepository;
 

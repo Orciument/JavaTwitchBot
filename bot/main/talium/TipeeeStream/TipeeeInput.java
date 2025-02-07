@@ -1,4 +1,4 @@
-package talium.inputs.TipeeeStream;
+package talium.TipeeeStream;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;

@@ -1,4 +1,4 @@
-package talium.inputs.TipeeeStream;
+package talium.TipeeeStream;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
