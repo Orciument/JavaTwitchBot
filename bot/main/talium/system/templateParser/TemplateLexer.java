@@ -42,8 +42,12 @@ public class TemplateLexer {
         if (src.isEOF()) {
             throw new UnexpectedEndOfInputException();
         }
-        if (src.peek() == '$') {
-            src.consume('$');
+        char ch = src.next();
+        if (Character.isWhitespace(ch)) {
+            return TemplateToken.text(String.valueOf(ch));
+        }
+
+        if (ch == '$' && src.peek() == '{') {
             src.consume('{');
             src.skipWhitespace();
             String varName = src.readUntil('}');
@@ -51,9 +55,8 @@ public class TemplateLexer {
             src.consume('}');
             return TemplateToken.var(varName);
 
-        } else if (src.peek() == '%') {
+        } else if (ch == '%' && src.peek() == '{') {
             // Get type of directive if or for
-            src.consume('%');
             src.consume('{');
             src.skipWhitespace();
             String directive = src.readTillWhitespaceOr('}');
@@ -86,6 +89,7 @@ public class TemplateLexer {
             }
         } else {
             StringBuilder buffer = new StringBuilder();
+            buffer.append(ch);
             // while no var or directive is encountered, all chars are consumed into a TEXT token
             while (!src.isEOF() && src.peek() != '$' && src.peek() != '%') {
                 buffer.append(src.next());

@@ -64,25 +64,21 @@ public class TemplateLexerTest {
     }
 
     @Test
-    void directive_start_in_text() throws UnsupportedDirective, UnexpectedEndOfInputException {
-        try {
-            new TemplateLexer("template text % mehr text").parse();
-            fail("Should have thrown an TemplateSyntaxException");
-        } catch (UnexpectedTokenException _) { }
-        try {
-            new TemplateLexer("template text %c mehr text").parse();
-            fail("Should have thrown an TemplateSyntaxException");
-        } catch (UnexpectedTokenException _) { }
+    void percent_dollar_in_template() throws UnsupportedDirective, UnexpectedEndOfInputException, UnexpectedTokenException {
+        new TemplateLexer("template text % mehr text").parse();
+        new TemplateLexer("template text %c mehr text").parse();
+        new TemplateLexer("template text $ mehr text").parse();
+        new TemplateLexer("template text $c mehr text").parse();
     }
 
     @Test
     void variable_start_in_text() throws UnsupportedDirective, UnexpectedEndOfInputException {
         try {
-            new TemplateLexer("template text $ mehr text").parse();
+            new TemplateLexer("template text ${ mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
         } catch (UnexpectedTokenException _) { }
         try {
-            new TemplateLexer("template text $c mehr text").parse();
+            new TemplateLexer("template text ${c mehr text").parse();
             fail("Should have thrown an TemplateSyntaxException");
         } catch (UnexpectedTokenException _) { }
     }
