@@ -14,12 +14,12 @@ import talium.Registrar;
 import talium.oauthConnector.OAuthEndpoint;
 import talium.oauthConnector.OauthAccount;
 import talium.oauthConnector.OauthAccountRepo;
-import talium.system.Out;
-import talium.system.eventSystem.EventDispatcher;
-import talium.system.eventSystem.Subscriber;
-import talium.system.inputSystem.BotInput;
-import talium.system.inputSystem.HealthManager;
-import talium.system.inputSystem.InputStatus;
+import talium.Out;
+import talium.eventSystem.EventDispatcher;
+import talium.eventSystem.Subscriber;
+import talium.inputSystem.BotInput;
+import talium.inputSystem.HealthManager;
+import talium.inputSystem.InputStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

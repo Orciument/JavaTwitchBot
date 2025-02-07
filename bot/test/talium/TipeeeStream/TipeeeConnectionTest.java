@@ -5,8 +5,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import talium.system.inputSystem.HealthManager;
-import talium.system.inputSystem.InputStatus;
+import talium.inputSystem.HealthManager;
+import talium.inputSystem.InputStatus;
 
 import java.time.Instant;
 

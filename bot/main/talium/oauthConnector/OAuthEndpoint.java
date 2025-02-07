@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import talium.TwitchBot;
-import talium.system.UnexpectedShutdownException;
+import talium.UnexpectedShutdownException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

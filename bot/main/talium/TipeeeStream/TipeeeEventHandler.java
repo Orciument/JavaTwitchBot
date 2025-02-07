@@ -1,6 +1,6 @@
 package talium.TipeeeStream;
 
-import talium.system.eventSystem.EventDispatcher;
+import talium.eventSystem.EventDispatcher;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
