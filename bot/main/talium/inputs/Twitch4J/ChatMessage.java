@@ -3,11 +3,13 @@ package talium.inputs.Twitch4J;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.common.enums.CommandPermission;
 import com.github.twitch4j.common.events.domain.EventUser;
-import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import talium.system.twitchCommands.cooldown.CooldownService;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static talium.inputs.Twitch4J.TwitchUserPermission.*;
@@ -23,32 +25,54 @@ public record ChatMessage(
         boolean isSkipSubsModeMessage,
         boolean isDesignatedFirstMessage,
         boolean isUserIntroduction,
-        @Nullable String getCustomRewardId,
-        @Nullable String replyToMessageID,
+        Optional<String> getCustomRewardId,
+        Optional<String> replyToMessageID,
         String channelID,
-        Instant sendAT
+        Instant sendAt
 ) {
+    private static final Logger log = LoggerFactory.getLogger(ChatMessage.class);
 
-    public static ChatMessage fromChannelMessageEvent(ChannelMessageEvent event) {
+    public static class ChatMessageMalformedExceptions extends Exception {
+        public ChatMessageMalformedExceptions(String message) {
+            super(message);
+        }
+    }
+
+    public static ChatMessage fromChannelMessageEvent(ChannelMessageEvent event) throws ChatMessageMalformedExceptions {
         //Convert ChatMessage
         EventUser eUser = event.getUser();
         TwitchUser user = new TwitchUser(eUser.getId(), eUser.getName(), convertUserPermissions(event.getPermissions()), event.getSubscriberMonths(), event.getSubscriptionTier());
-        String replyToID = null;
+
+        String messageId = event.getMessageEvent().getEventId();
+        String message = event.getMessage();
+        String channelId = event.getChannel().getId();
+        if (messageId == null || messageId.isEmpty()) {
+            throw new ChatMessageMalformedExceptions("MessageId is not allowed to be empty");
+        }
+        if (message == null || message.isEmpty()) {
+            throw new ChatMessageMalformedExceptions("Message is not allowed to be empty");
+        }
+        if (channelId == null || channelId.isEmpty()) {
+            throw new ChatMessageMalformedExceptions("channelId is not allowed to be empty");
+        }
+
+        Optional<String> replyToID = Optional.empty();
         if (event.getReplyInfo() != null)
-            replyToID = event.getReplyInfo().getMessageId();
+            replyToID = event.getReplyInfo().getMessageId().describeConstable();
+
         return new ChatMessage(
-                event.getMessageEvent().getEventId(),
+                messageId,
                 CooldownService.computeMessageUserIndex(user),
                 CooldownService.computeMessageGlobalIndex(),
-                event.getMessage(),
+                message,
                 user,
                 event.isHighlightedMessage(),
-                event.isHighlightedMessage(),
+                event.isSkipSubsModeMessage(),
                 event.isDesignatedFirstMessage(),
                 event.isUserIntroduction(),
-                event.getCustomRewardId().orElse(null),
+                event.getCustomRewardId(),
                 replyToID,
-                event.getChannel().getId(),
+                channelId,
                 event.getFiredAtInstant()
         );
     }
@@ -90,9 +114,8 @@ public record ChatMessage(
                 case MODERATOR -> newPerm.add(MODERATOR);
                 case BROADCASTER -> newPerm.add(BROADCASTER);
                 case OWNER -> newPerm.add(OWNER);
-                //PRIME_TURBO, NO_VIDEO, MOMENTS, NO_AUDIO, TWITCHSTAFF, SUBGIFTER, BITS_CHEERER, PARTNER, FORMER_HYPE_TRAIN_CONDUCTOR, CURRENT_HYPE_TRAIN_CONDUCTOR -> {}
-                default -> {
-                }
+                case PRIME_TURBO, NO_VIDEO, MOMENTS, NO_AUDIO, TWITCHSTAFF, SUBGIFTER, BITS_CHEERER, PARTNER, FORMER_HYPE_TRAIN_CONDUCTOR, CURRENT_HYPE_TRAIN_CONDUCTOR -> {}
+                default -> log.warn("Unknown user permission: {}", cp);
             }
         }
         return newPerm;

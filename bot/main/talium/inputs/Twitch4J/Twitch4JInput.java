@@ -170,6 +170,10 @@ public class Twitch4JInput implements BotInput {
         if (messageEvent.getMessage().toCharArray()[0] == '!') {
             System.out.println(simpleDateFormat.format(new Date()) + " |CHAT | " + messageEvent.getUser().getName() + ": " + messageEvent.getMessage());
         }
-        EventDispatcher.dispatch(ChatMessage.fromChannelMessageEvent(messageEvent));
+        try {
+            EventDispatcher.dispatch(ChatMessage.fromChannelMessageEvent(messageEvent));
+        } catch (ChatMessage.ChatMessageMalformedExceptions e) {
+           logger.error("Error converting Twitch message", e);
+        }
     }
 }
