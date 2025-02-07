@@ -5,6 +5,7 @@ import io.socket.client.Socket;
 import io.socket.engineio.client.EngineIOException;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.web.util.InvalidUrlException;
 import org.springframework.web.util.UriComponentsBuilder;
 import talium.Registrar;
 import talium.TwitchBot;
@@ -148,12 +149,12 @@ public class TipeeeInput implements BotInput {
     static @NotNull URI parseSocketInfoUrlResponse(String body, String apiKey) throws SocketInfoEndpointException {
         try {
             var datas = new JSONObject(body).getJSONObject("datas");
-            return UriComponentsBuilder.fromHttpUrl(datas.getString("host"))
+            return UriComponentsBuilder.fromUriString(datas.getString("host"))
                     .queryParam("access_token", apiKey)
                     .build().toUri();
         } catch (JSONException e) {
             throw new SocketInfoEndpointException("TipeeeStream socket info Url responded with unknown format!", e);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidUrlException | IllegalStateException e) {
             throw new SocketInfoEndpointException("Returned Host ist not a valid URL!", e);
         }
     }

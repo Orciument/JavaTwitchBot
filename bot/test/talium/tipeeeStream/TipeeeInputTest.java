@@ -39,7 +39,7 @@ class TipeeeInputTest {
                     "message": "success",
                     "datas": {
                         "port": "443",
-                        "host": "hts://sso-cf.tipeeestream.com"
+                        "host": "https://..sso-cf.tipeeestream.com"
                     }
                 }""";
         try {

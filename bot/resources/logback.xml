@@ -13,8 +13,12 @@
         </encoder>
     </appender>
 
+    <logger name="logback" level="INFO"/>
     <logger name="talium.inputs" level="WARN"/>
     <logger name="talium.system" level="INFO"/>
+    <logger name="talium.coinsWatchtime" level="WARN"/>
+    <logger name="talium.ASCIIProgressbar" level="INFO"/>
+
     <logger name="talium.TwitchBot" level="INFO" additivity="false">
         <appender-ref ref="SYSTEM"/>
     </logger>
@@ -24,9 +28,6 @@
     <logger name="talium.StopWatch" level="INFO" additivity="false">
         <appender-ref ref="SYSTEM"/>
     </logger>
-    <logger name="talium.coinsWatchtime" level="WARN"/>
-    <logger name="talium.ASCIIProgressbar" level="INFO"/>
-    <logger name="logback" level="INFO"/>
     <logger name="org.springframework.security.web" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
