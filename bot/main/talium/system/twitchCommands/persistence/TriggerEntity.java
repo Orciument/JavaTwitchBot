@@ -7,7 +7,7 @@ import talium.system.twitchCommands.controller.MessagePatternDTO;
 import talium.system.twitchCommands.controller.TriggerDTO;
 import talium.system.twitchCommands.cooldown.ChatCooldown;
 import talium.system.twitchCommands.triggerEngine.TriggerEngine;
-import talium.inputs.Twitch4J.TwitchUserPermission;
+import talium.Twitch4J.TwitchUserPermission;
 import talium.system.stringTemplates.Template;
 
 import java.util.Arrays;

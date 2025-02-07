@@ -1,11 +1,10 @@
-package talium.inputs.Twitch4J;
+package talium.Twitch4J;
 
 import com.github.twitch4j.helix.domain.Chatter;
 import com.github.twitch4j.helix.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 

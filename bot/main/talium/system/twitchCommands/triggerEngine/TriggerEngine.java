@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import talium.inputs.Twitch4J.ChatMessage;
+import talium.Twitch4J.ChatMessage;
 import talium.system.Out;
 import talium.system.eventSystem.Subscriber;
 import talium.system.stringTemplates.TemplateService;

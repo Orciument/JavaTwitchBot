@@ -1,4 +1,4 @@
-package talium.inputs.TipeeeStream;
+package talium.TipeeeStream;
 
 import jakarta.persistence.*;
 import org.springframework.lang.Nullable;

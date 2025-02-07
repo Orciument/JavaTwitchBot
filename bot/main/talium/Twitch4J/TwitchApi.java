@@ -1,4 +1,4 @@
-package talium.inputs.Twitch4J;
+package talium.Twitch4J;
 
 import com.github.twitch4j.helix.domain.Chatter;
 import com.github.twitch4j.helix.domain.User;

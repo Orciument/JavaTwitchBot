@@ -2,7 +2,7 @@ package talium;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import talium.inputs.Twitch4J.TwitchUserPermission;
+import talium.Twitch4J.TwitchUserPermission;
 import talium.system.inputSystem.HealthManager;
 import talium.system.stringTemplates.Template;
 import talium.system.stringTemplates.TemplateService;

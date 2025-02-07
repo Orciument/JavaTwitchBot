@@ -1,4 +1,4 @@
-package talium.inputs.Twitch4J;
+package talium.Twitch4J;
 
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.common.enums.CommandPermission;
@@ -12,8 +12,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static talium.inputs.Twitch4J.TwitchUserPermission.*;
-import static talium.inputs.Twitch4J.TwitchUserPermission.OWNER;
+import static talium.Twitch4J.TwitchUserPermission.*;
+import static talium.Twitch4J.TwitchUserPermission.OWNER;
 
 public record ChatMessage(
         String messageId,
