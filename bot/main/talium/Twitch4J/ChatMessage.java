@@ -5,7 +5,7 @@ import com.github.twitch4j.common.enums.CommandPermission;
 import com.github.twitch4j.common.events.domain.EventUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import talium.system.twitchCommands.cooldown.CooldownService;
+import talium.twitchCommands.cooldown.CooldownService;
 
 import java.time.Instant;
 import java.util.HashSet;

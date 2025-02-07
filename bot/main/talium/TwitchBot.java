@@ -9,19 +9,18 @@ import talium.TipeeeStream.TipeeeInput;
 import talium.Twitch4J.Twitch4JInput;
 import talium.Twitch4J.TwitchConfig;
 import talium.oauthConnector.OauthAccountRepo;
-import talium.system.StopWatch;
-import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
-import talium.system.coinsWatchtime.WatchtimeUpdateService;
-import talium.system.coinsWatchtime.chatter.ChatterService;
-import talium.system.inputSystem.BotInput;
-import talium.system.inputSystem.HealthManager;
-import talium.system.inputSystem.InputStatus;
+import talium.coinsWatchtime.WIPWatchtimeCommandServer;
+import talium.coinsWatchtime.WatchtimeUpdateService;
+import talium.coinsWatchtime.chatter.ChatterService;
+import talium.inputSystem.BotInput;
+import talium.inputSystem.HealthManager;
+import talium.inputSystem.InputStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import talium.system.twitchCommands.triggerEngine.TriggerProvider;
+import talium.twitchCommands.triggerEngine.TriggerProvider;
 
 @SpringBootApplication
 @EnableJpaRepositories
