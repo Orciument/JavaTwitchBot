@@ -8,7 +8,7 @@ import talium.inputs.TipeeeStream.TipeeeConfig;
 import talium.inputs.TipeeeStream.TipeeeInput;
 import talium.inputs.Twitch4J.Twitch4JInput;
 import talium.inputs.Twitch4J.TwitchConfig;
-import talium.inputs.shared.oauth.OauthAccountRepo;
+import talium.oauthConnector.OauthAccountRepo;
 import talium.system.StopWatch;
 import talium.system.coinsWatchtime.WIPWatchtimeCommandServer;
 import talium.system.coinsWatchtime.WatchtimeUpdateService;
