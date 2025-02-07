@@ -1,4 +1,4 @@
-package talium.TipeeeStream;
+package talium.tipeeeStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

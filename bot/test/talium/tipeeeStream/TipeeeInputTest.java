@@ -1,4 +1,4 @@
-package talium.TipeeeStream;
+package talium.tipeeeStream;
 
 import org.json.JSONException;
 import org.json.JSONObject;

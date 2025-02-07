@@ -1,4 +1,4 @@
-package talium.Twitch4J;
+package talium.twitch4J;
 
 import java.util.Objects;
 

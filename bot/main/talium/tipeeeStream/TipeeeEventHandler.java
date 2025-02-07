@@ -1,4 +1,4 @@
-package talium.TipeeeStream;
+package talium.tipeeeStream;
 
 import talium.eventSystem.EventDispatcher;
 import org.json.JSONArray;

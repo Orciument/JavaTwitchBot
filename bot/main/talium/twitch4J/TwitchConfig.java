@@ -1,4 +1,4 @@
-package talium.Twitch4J;
+package talium.twitch4J;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
