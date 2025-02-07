@@ -6,6 +6,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      db:
+        image: mariadb:11.1.2
+        env:
+          MYSQL_DATABASE: 'talium'
+          MYSQL_USER: 'taliumBot'
+          MYSQL_PASSWORD: 'password'
+          MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+          - "4770:3306"
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
@@ -24,3 +35,6 @@ jobs:
         working-directory: bot
         env:
           JAVA_TOOL_OPTIONS: --enable-preview
+          db_url: localhost:4770/talium
+          db_user: taliumBot
+          db_pass: password
