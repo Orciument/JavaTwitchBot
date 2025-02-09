@@ -8,7 +8,7 @@ You can use or modify the bot as you want. At this time it is developed for our 
 >The current milstone for that can be found under [Issues > Milestones](https://github.com/Clym-Dev-Team/Talium/milestone/3)
 
 > [!NOTE]
-> If you want to contribute, have a question, or have generell interest in the project you can write [Orciument](https://discordapp.com/users/424579117577404417) on discord!
+> If you want to **contribute**, have a question, or have generell interest in the project you can write [Orciument](https://discordapp.com/users/424579117577404417) on discord!
 > You can of course also create an issue or pullrequest if you would rather contribute directly.
 > Our generell needs are modeled via Issues, anything that does not have an assignee is definitly free for you to start on!
 
@@ -74,8 +74,10 @@ These Features are currently planned for the 1.0 Version:
 
 ## Instalation
 **We are currently in a pre 1.0 state, so we have no final artifact to install at this time.**
+
 The eventual target environment is a Docker Image, you will find the new releases in the [Github Releases Page](https://github.com/Clym-Dev-Team/Talium/releases)
-You can of course compile the code for yourself, (besides --preview-enabled because of String Templates) no special action is required to build the Java executable. 
+
+You can of course compile the code for yourself, (besides --preview-enabled because of String Templates) nothing special is required to build the Java executable. 
 
 ## License
 Standart MIT License see -> [License](LICENSE)
